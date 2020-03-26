@@ -1,0 +1,45 @@
+Card #,Name,Rage,Card Description,Card Type,# of players,Age,Origin
+0,Troll,2,"When this monster invades a province, destroy all enemy warriors in it.",Monster,-,1,Base game
+1,Dwarf Chieftain,2*,*Costs no rage to upgrade or invade,Monster,-,1,Base game
+2,Mountain Giant,3,This monster is a leader.,Monster,-,1,Kickstarter Exclusive
+3,Fenrir,2,Ragnarok destroys Fenrir's province instead of the doomed one (unless it's Yggdrasil).,Monster,-,1,Kickstarter Exclusive
+4,Lord of Hammers,3,"If you successfully pillage with your leader, you may move him to an adjacent province.",Leader,-,1,Base game
+5,Brothers In Arms,1*,*Each pair of your warriors in a province is 3 total STR.,Warrior,-,1,Base game
+6,Loki's Dragons,2,Gain 4 glory when a ship of yours is destroyed.,Ship,-,1,Base game
+7,Loki's Domain,1,Gain 1 glory for each figure you release from Valhalla.,Clan,-,1,Base game
+8,Frigga's Charm,0,Upgrade cards cost you 1 less rage to play,Clan,-,1,Base game
+9,Thor's Glory,2,Gain 2 glory whenever at least 2 enemy figures are destroyed in a battle you participate in.,Clan,-,1,Base game
+10,Alfheim Quest,5,"Have the most STR in at least one Alfheim (gray) province. If completed, raise one of your clan stats by 1.",Quest,-,1,Base game
+11,Jotunheim Quest,5,"Have the most STR in at least one Jotunheim (blue) province. If completed, raise one of your clan stats by 1.",Quest,-,1,Base game
+12,Manheim Quest,5,"Have the most STR in at least one Manheim (yellow) province. If completed, raise one of your clan stats by 1.",Quest,-,1,Base game
+13,Glorious Death,6,"Have at least 4 figures in Valhalla (before Ragnarok). If completed, raise one of your clan stats by 1.",Quest,-,1,Base game
+14,Odin's Smite,+1,Destroy one warrior from each opponent in this province before comparing STR.,Battle,-,1,Base game
+15,Tyr's Bash,+2,-,Battle,-,1,Base game
+16,Heimdall's Sight,+X,This card has the same value as the highest revealed enemy card.,Battle,-,1,Base game
+17,Frigga's Grace,+2,"If you pillage successfully, raise another of your clan stats by 1.",Battle,-,1,Base game
+18,Loki's Trickery,+0,"If you lose, steal 1 rage from the winnign player.",Battle,-,1,Base game
+19,Tyr's Smash,+3,-,Battle,-,1,Base game
+20,Tyr's Smite,+5,-,Battle,-,1,Base game
+21,Thor's Hammer,+1,Gain 3 glory if you win this battle.,Battle,-,1,Base game
+22,Sea Serpent,3,This monster counts as a ship.,Monster,3+,1,Base game
+23,Frigga's Succor,2,"When you invade with any figure, you may invade with an additional warrior in that province for free.",Clan,3+,1,Base game
+24,Tyr's Domain,0,"After you reveal a quest card in combat, you may treat it as a +3 battle card.",Clan,3+,1,Base game
+25,Yggdrasil Quest,6,"Have the most STR in Yggdrasil. If completed, raise one of your clan stats by 1.",Quest,3+,1,Base game
+26,Odin's Smite,+1,Destroy one warrior from each opponent in this province before comparing STR.,Battle,3+,1,Base game
+27,Tyr's Smash,+3,-,Battle,3+,1,Base game
+28,Loki's Blessing,1,"If you lose a battle, you may invade that province with a warrior for free.",Clan,4+,1,Base game
+29,Alfheim Quest,5,"Have the most STR in at least one Alfheim (gray) province. If completed, raise one of your clan stats by 1.",Quest,4+,1,Base game
+30,Jotunheim Quest,5,"Have the most STR in at least one Jotunheim (blue) province. If completed, raise one of your clan stats by 1.",Quest,4+,1,Base game
+31,Manheim Quest,5,"Have the most STR in at least one Manheim (yellow) province. If completed, raise one of your clan stats by 1.",Quest,4+,1,Base game
+32,Glorious Death,6,"Have at least 4 figures in Valhalla (before Ragnarok). If completed, raise one of your clan stats by 1.",Quest,4+,1,Base game
+33,Tyr's Crush,+4,-,Battle,4+,1,Base game
+34,Frigga's Grace,+2,"If you pillage successfully, raise another of your clan stats by 1.",Battle,4+,1,Base game
+35,Loki's Trickery,+0,"If you lose, steal 1 rage from the winnign player.",Battle,4+,1,Base game
+36,Lord of Hammers,3,"If you successfully pillage with your leader, you may move him to an adjacent province.",Leader,5+,1,5th Player Expansion
+37,Brothers In Arms,1*,*Each pair of your warriors in a province is 3 total STR.,Warrior,5+,1,5th Player Expansion
+38,Loki's Dragons,2,Gain 4 glory when a ship of yours is destroyed.,Ship,5+,1,5th Player Expansion
+39,Widespread,7,"Have the most STR in at least 2 different provinces. If completed, raise one of your clan stats by 1.",Quest,5+,1,5th Player Expansion
+40,Glorious Death,6,"Have at least 4 figures in Valhalla (before Ragnarok). If completed, raise one of your clan stats by 1.",Quest,5+,1,5th Player Expansion
+41,Tyr's Smash,+3,-,Battle,5+,1,5th Player Expansion
+42,Tyr's Smite,+5,-,Battle,5+,1,5th Player Expansion
+43,Thor's Hammer,+1,Gain 3 glory if you win this battle.,Battle,5+,1,5th Player Expansion
