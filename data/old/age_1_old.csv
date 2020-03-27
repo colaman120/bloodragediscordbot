@@ -2,7 +2,7 @@ Card #,Name,Rage,Card Description,Card Type,# of players,Age,Origin
 0,Troll,2,"When this monster invades a province, destroy all enemy warriors in it.",Monster,-,1,Base game
 1,Dwarf Chieftain,2*,*Costs no rage to upgrade or invade,Monster,-,1,Base game
 2,Mountain Giant,3,This monster is a leader.,Monster,-,1,Kickstarter Exclusive
-3,Garm,2,Ragnarok destroys Fenrir's province instead of the doomed one (unless it's Yggdrasil).,Monster,-,1,Kickstarter Exclusive
+3,Fenrir,2,Ragnarok destroys Fenrir's province instead of the doomed one (unless it's Yggdrasil).,Monster,-,1,Kickstarter Exclusive
 4,Lord of Hammers,3,"If you successfully pillage with your leader, you may move him to an adjacent province.",Leader,-,1,Base game
 5,Brothers In Arms,1*,*Each pair of your warriors in a province is 3 total STR.,Warrior,-,1,Base game
 6,Loki's Dragons,2,Gain 4 glory when a ship of yours is destroyed.,Ship,-,1,Base game
@@ -43,4 +43,3 @@ Card #,Name,Rage,Card Description,Card Type,# of players,Age,Origin
 41,Tyr's Smash,+3,-,Battle,5+,1,5th Player Expansion
 42,Tyr's Smite,+5,-,Battle,5+,1,5th Player Expansion
 43,Thor's Hammer,+1,Gain 3 glory if you win this battle.,Battle,5+,1,5th Player Expansion
-44,Hildisvini,1,"When this monster invades a province, it may replace a figure there, moving it to an adjacent province of your choice.",Monster,-,1,Kickstarter Exclusive

@@ -19,11 +19,13 @@ player_list = []
 cards = np.zeros(1)
 draft = []
 current_age = 0
+final_hand = []
+final_hand_str = []
+glory_counter = []
 # [i] = age
 # [j] = players
 
-final_hand = []
-final_hand_str = []
+
 
 card_counts = np.array([[22, 28, 36, 44],
                         [21, 27, 35, 43],
@@ -54,6 +56,7 @@ async def add_player(ctx):
     player_list.append(ctx.message.author)
     draft.append(-1)
     final_hand.append([])
+    glory_counter.append(0)
     await ctx.send('Player added')
 
 #shows players in chat
@@ -67,22 +70,29 @@ async def show_players(ctx):
 #clears all players in game
 @bot.command(name='clear_game', help='Empties player_list')
 async def empty_player_list(ctx):
+    global player_list, cards, draft, current_age, final_hand, final_hand_str
     player_list.clear()
-    await ctx.send('Players cleared')
+    cards = np.zeros(1)
+    draft.clear()
+    current_age = 0
+    final_hand.clear()
+    final_hand_str.clear()
+    await ctx.send('Game cleared')
 
 #drafts cards based on age and number of players
 @bot.command(name='start_age', help='Begins a new age of drafting')
 async def draft_cards(ctx, age: int):
-#    cards = np.empty([len(player_list),8], int)
-    temp = gen_hands(age)
-    global cards, current_age
-    cards = np.copy(temp)
-    current_age = copy.copy(age)
 
-    for i in range(len(cards)):
-        cards[i] = np.sort(cards[i])
-        hand = card_name_gen(age, cards[i])
-        await player_list[i].send(num_card_concatenator(cards[i], hand))
+    if len(player_list) > 2:
+        temp = gen_hands(age)
+        global cards, current_age
+        cards = np.copy(temp)
+        current_age = copy.copy(age)
+
+        for i in range(len(cards)):
+            cards[i] = np.sort(cards[i])
+            hand = card_name_gen(age, cards[i])
+            await player_list[i].send(num_card_concatenator(cards[i], hand))
 #        await player_list[i].send(num_concatenator(cards[i]))
 #        await player_list[i].send(card_concatenator(hand))
 
