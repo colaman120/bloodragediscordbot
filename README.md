@@ -7,7 +7,7 @@ order to play this game.
 Please keep in mind that I started this like this week and it's my first time creating a bot.
 I'm still in the process of fixing and adding a lot of things.
 
-###Commands:
+### Commands:
 !join_game: This is the command that allows discord users to enter the ongoing game. Anyone that
 wants to join must type this command. Keep in mind that this game only plays 2-4 (5 if you own the
 expansion.)
