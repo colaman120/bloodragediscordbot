@@ -8,18 +8,18 @@ Please keep in mind that I started this like this week and it's my first time cr
 I'm still in the process of fixing and adding a lot of things.
 
 ### Commands:
-!join_game: This is the command that allows discord users to enter the ongoing game. Anyone that
+**!join_game**: This is the command that allows discord users to enter the ongoing game. Anyone that
 wants to join must type this command. Keep in mind that this game only plays 2-4 (5 if you own the
 expansion.)
 
-!show_players: This command shows all players currently signed up for the game.
+**!show_players**: This command shows all players currently signed up for the game.
 
-!clear_game: This command clears every player from the player list.
+**!clear_game**: This command clears every player from the player list.
 
-!start_age (age_number): This command begins the draft based on the number of players currently signed
+**!start_age (age_number)**: This command begins the draft based on the number of players currently signed
 up and the age that is input in the command. Without the age, it will not run.
 
-!draft (card_number): Upon using the !start_age command, the bot will dm each player signed up and
+**!draft (card_number)**: Upon using the !start_age command, the bot will dm each player signed up and
 send each a list of cards and the number associated to the card. The player must then respond to
 the bot with the !draft command followed by the number of the card that they want to draft. After
 all players have done so, the bot will automatically move the cards between players so that drafting
