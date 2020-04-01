@@ -69,44 +69,48 @@ async def add_player(ctx):
                                    ctx.message.author.id):
             player_list.append(ctx.message.author)
             await ctx.send('Player added to Blood Rage game')
-        else:
-            await ctx.send('Too many players, player not added to Blood Rage game')
+
+    elif current_game == None:
+        await ctx.send('No game selected')
+
+    else:
+        await ctx.send('Too many players, player not added to game')
 
 #shows players in chat
 @bot.command(name='show_players', help='Displays all current players added')
 async def show_players(ctx):
-    global current_game
+    global current_game, player_list
 
-    players = current_game.get_players()
-    if len(players) == 0:
+    if len(player_list) == 0:
         await ctx.send('No players')
     else:
-        for i in players:
-            await ctx.send(player_list[i].display_name)
+        for i in player_list:
+            await ctx.send(i.display_name)
 
 #clears all players in game
 @bot.command(name='clear_game', help='Empties player_list')
-async def empty_player_list(ctx):
-    global current_game
+async def clear_game(ctx):
+    global current_game, player_list
     current_game = None
+    player_list.clear()
     await ctx.send('Game cleared')
 
 #removes a single player
 @bot.command(name='remove_player', help='Removes one player from the game')
-async def remove_player(ctx, un, discrim: int):
+async def remove_player(ctx, un, discrim):
     global current_game, player_list
 
-    if bool = current_game.remove_player(un, discrim):
-        for i in player_list:
-            if i.username == un and i.discriminator = discrim:
-                player_list.remove(i)
+    if current_game.remove_player(un, discrim):
+        for i in range(len(player_list)):
+            if player_list[i].name == un and player_list[i].discriminator == discrim:
+                player_list.remove(player_list[i])
         await ctx.send(un + ' removed from game')
     else:
         await ctx.send(un + ' not found in game')
 
 #drafts cards based on age and number of players
 @bot.command(name='start_age', help='Begins a new age of drafting')
-async def draft_cards(ctx, age: int):
+async def start_age(ctx, age: int):
     global current_game
     hands = current_game.start_age(age)
     for i in hands:
@@ -119,9 +123,9 @@ async def draft_from_dm(ctx, c_num: int):
     final_hands = current_game.draft(c_num, ctx.message.author.id)
 
     if len(final_hands) == 0:
-        return "Card not in hand"
+        await ctx.send('Card not in hand')
     else:
-        return "Card Drafted"
+        await ctx.send('Card Drafted')
 
 
 

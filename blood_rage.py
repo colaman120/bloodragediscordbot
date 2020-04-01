@@ -8,7 +8,6 @@ import discord
 
 class BloodRage:
     player_list = []
-    player_id = []
     cards = []
     draft = []
     current_age = 0
@@ -26,10 +25,19 @@ class BloodRage:
     age3_cards = pandas.read_csv('data/age_3.csv', index_col='Card #')
 
     def __init__(self):
-        self.data = 0
+        global player_list, cards, draft, current_age, final_hand, final_hand_str, glory_counter, game_id
+        player_list = []
+        cards = []
+        draft = []
+        current_age = 0
+        final_hand = []
+        final_hand_str = []
+        glory_counter = []
+        game_id = 'br'
 
     #adds a player to the blood rage game
-    def add_player(un, discrim, id):
+    def add_player(br, un, discrim, id):
+        global player_list, draft, final_hand, glory_counter
         if len(player_list) < 5:
             player_list.append([un, discrim, id])
             draft.append(-1)
@@ -41,80 +49,25 @@ class BloodRage:
 
     # returns a list of strings of the players display names
     def get_num_of_players():
+        global player_list
         return len(player_list)
 
     # removes a single player based on their username and discord discriminator
-    def remove_player(un, discrim):
+    def remove_player(br, un, discrim):
+        global player_list
         player_removed = False
         for player in player_list:
-            if player[0] == un and player[1]] == discrim:
+            if player[0] == un or player[1] == discrim:
                 player_list.remove(player)
                 player_removed = True
         return player_removed
 
-    #provides the initial hands per age
-    def start_age(age):
-        if len(player_list) > 3:
-            global cards, current_age
-            cards = copy.deepcopy(gen_hands(age))
-            current_age = copy.copy(age)
-
-        generated_hands = []
-
-        for i in range(len(cards)):
-            cards[i] = np.sort(cards[i])
-            hand = card_name_gen(age, cards[i])
-            generated_hands = num_card_concatenator(cards[i], hand)
-        return generated_hands
-
-    #advances draft and accepts card inputs
-    def draft(c_num, author_id):
-        global current_age, cards, draft, final_hand
-
-        card_drafted = False
-        for i in range(len(player_list)):
-            if author_id == player_list[i][2]:
-                for j in range(len(cards[i])):
-                    if c_num == cards[i][j]:
-                        draft[i] = c_num
-                        card_drafted = True
-                        break
-
-        if card_drafted == False:
-            return []
-
-        if card_drafted:
-            if check_all_draft():
-                add_to_final_hand()
-                remove_cards()
-                if check_end_draft() == False:
-                    advance_draft()
-
-                    to_return = []
-                    for i in range(len(cards)):
-                        cards[i] = np.sort(cards[i])
-                        hand = card_name_gen(current_age, cards[i])
-                        to_return.append(num_card_concatenator(cards[i], hand))
-    #                    await player_list[i].send(num_card_concatenator(cards[i], hand))
-    #                    await player_list[i].send(card_concatenator(hand))
-                    return to_return
-
-                else:
-                    to_return = []
-                    for i in range(len(final_hand_str)):
-                        to_return.append(final_hand_str[i])
-    #                    await player_list[i].send(final_hand_str[i])
-
-                    draft.clear()
-                    cards = np.zeros(1)
-                    for i in player_list:
-                        draft.append(-1)
-
     #generates hands
-    def gen_hands(age: int):
+    def gen_hands(age):
         numbers = np.arange(card_counts[age - 1][len(player_list) - 2])
         to_return = np.random.choice(numbers, size=(len(player_list), 8), replace=False)
         return to_return.tolist()
+
 
     #TODO: Fix list_of_nums to understand that it is a list and not an array
     #make number array look nice
@@ -140,7 +93,7 @@ class BloodRage:
 
         return to_string
 
-    #TODO: Fix list_of_nums to understand that it is a list and not an array 
+    #TODO: Fix list_of_nums to understand that it is a list and not an array
     def num_card_concatenator(list_of_nums, list_of_cards):
         to_string = ''
         list_of_nums = list_of_nums.astype(str)
@@ -215,3 +168,62 @@ class BloodRage:
         else:
             cards = cards.tolist()
             return False
+
+    #provides the initial hands per age
+    def start_age(br, age):
+        global player_list, cards, current_age
+
+        if len(player_list) >= 2:
+            cards = copy.deepcopy(gen_hands(age))
+            current_age = copy.copy(age)
+
+            generated_hands = []
+
+            for i in range(len(cards)):
+                cards[i] = np.sort(cards[i])
+                hand = card_name_gen(age, cards[i])
+                generated_hands = num_card_concatenator(cards[i], hand)
+                return generated_hands
+
+    #advances draft and accepts card inputs
+    def draft(br, c_num, author_id):
+        global current_age, cards, draft, final_hand
+
+        card_drafted = False
+        for i in range(len(player_list)):
+            if author_id == player_list[i][2]:
+                for j in range(len(cards[i])):
+                    if c_num == cards[i][j]:
+                        draft[i] = c_num
+                        card_drafted = True
+                        break
+
+        if card_drafted == False:
+            return []
+
+        if card_drafted:
+            if check_all_draft():
+                add_to_final_hand()
+                remove_cards()
+                if check_end_draft() == False:
+                    advance_draft()
+
+                    to_return = []
+                    for i in range(len(cards)):
+                        cards[i] = np.sort(cards[i])
+                        hand = card_name_gen(current_age, cards[i])
+                        to_return.append(num_card_concatenator(cards[i], hand))
+                        #                    await player_list[i].send(num_card_concatenator(cards[i], hand))
+                        #                    await player_list[i].send(card_concatenator(hand))
+                        return to_return
+
+                else:
+                    to_return = []
+                    for i in range(len(final_hand_str)):
+                        to_return.append(final_hand_str[i])
+                        #                    await player_list[i].send(final_hand_str[i])
+
+                        draft.clear()
+                        cards = np.zeros(1)
+                        for i in player_list:
+                            draft.append(-1)
