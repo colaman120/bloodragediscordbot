@@ -113,8 +113,11 @@ async def remove_player(ctx, un, discrim):
 async def start_age(ctx, age: int):
     global current_game
     hands = current_game.start_age(age)
-    for i in hands:
-        await player_list[i].send(i)
+    if len(hands) == 0:
+        await ctx.send('Not enough players')
+    else:
+        for i in range(len(hands)):
+            await player_list[i].send(hands[i])
 
 
 @bot.command(name='draft', help='Draft a card from the given hand')
