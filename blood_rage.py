@@ -78,18 +78,6 @@ class BloodRage:
         return to_return.tolist()
 
 
-    #TODO: Fix list_of_nums to understand that it is a list and not an array
-    #make number array look nice
-    def num_concatenator(self, list_of_nums):
-        to_string = ''
-#        list_of_nums = list_of_nums.astype(str)
-
-        for i in range(len(list_of_nums)):
-            to_string = to_string + list_of_nums[i]
-            if i != len(list_of_nums) - 1:
-                to_string = to_string + ', '
-
-        return to_string
 
     #makes card array look nice
     def card_concatenator(self, list_of_cards):
@@ -105,7 +93,7 @@ class BloodRage:
     #TODO: Fix list_of_nums to understand that it is a list and not an array
     def num_card_concatenator(self, list_of_nums, list_of_cards):
         to_string = ''
-#        list_of_nums = list_of_nums.astype(str)
+        list_of_nums = list_of_nums.astype(str)
 
         for i in range(len(list_of_cards)):
             to_string = to_string + list_of_nums[i] + ": " + list_of_cards[i]
@@ -146,7 +134,7 @@ class BloodRage:
         cards = np.delete(cards, 0, 1)
         cards = cards.tolist()
 
-    def add_to_final_hand():
+    def add_to_final_hand(self):
         global draft, final_hand
         for i in range(len(draft)):
             final_hand[i].append(draft[i])
@@ -171,8 +159,7 @@ class BloodRage:
         cards = np.asarray(cards)
         if cards.size <= len(player_list) * 2:
             for i in range(len(final_hand)):
-                final_hand_str.append(card_concatenator(card_name_gen(current_age, final_hand[i])))
-                cards = cards.tolist()
+                final_hand_str.append(self.card_concatenator(self.card_name_gen(current_age, final_hand[i])))
             return True
         else:
             cards = cards.tolist()
@@ -189,7 +176,7 @@ class BloodRage:
             generated_hands = []
 
             for i in range(len(cards)):
-                cards[i].sort()
+                cards[i] = np.sort(cards[i])
                 hand = br.card_name_gen(age, cards[i])
                 generated_hands.append(br.num_card_concatenator(cards[i], hand))
 
@@ -227,7 +214,7 @@ class BloodRage:
                         to_return.append(br.num_card_concatenator(cards[i], hand))
                         #                    await player_list[i].send(num_card_concatenator(cards[i], hand))
                         #                    await player_list[i].send(card_concatenator(hand))
-                        return to_return
+                    return to_return
 
                 else:
                     to_return = []
@@ -235,7 +222,28 @@ class BloodRage:
                         to_return.append(final_hand_str[i])
                         #                    await player_list[i].send(final_hand_str[i])
 
-                        draft.clear()
-                        cards = np.zeros(1)
-                        for i in player_list:
-                            draft.append(-1)
+                    draft.clear()
+                    cards = []
+                    final_hand.clear()
+                    final_hand_str.clear()
+                    for i in player_list:
+                        draft.append(-1)
+                        final_hand.append([])
+
+                    return to_return
+
+
+'''
+#TODO: Fix list_of_nums to understand that it is a list and not an array
+#make number array look nice
+def num_concatenator(self, list_of_nums):
+    to_string = ''
+    list_of_nums = list_of_nums.astype(str)
+
+    for i in range(list_of_nums.size):
+        to_string = to_string + list_of_nums[i]
+        if i != list_of_nums.size - 1:
+            to_string = to_string + ', '
+
+    return to_string
+'''

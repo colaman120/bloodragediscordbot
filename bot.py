@@ -60,18 +60,17 @@ async def create_br(ctx):
     await ctx.send('Game set to Blood Rage')
 
 #allows players to join a game
-@bot.command(name='join_br', help='Add player to current Blood Rage game')
+@bot.command(name='join', help='Add player to current Blood Rage game')
 async def add_player(ctx):
     global current_game, player_list
-    if current_game.game_id == 'br':
+    if current_game == None:
+            await ctx.send('No game selected')
+    elif current_game.game_id == 'br':
         if current_game.add_player(ctx.message.author.name,
                                    ctx.message.author.discriminator,
                                    ctx.message.author.id):
             player_list.append(ctx.message.author)
             await ctx.send('Player added to Blood Rage game')
-
-    elif current_game == None:
-        await ctx.send('No game selected')
 
     else:
         await ctx.send('Too many players, player not added to game')
@@ -122,13 +121,17 @@ async def start_age(ctx, age: int):
 
 @bot.command(name='draft', help='Draft a card from the given hand')
 async def draft_from_dm(ctx, c_num: int):
-    global current_game
+    global current_game, player_list
     final_hands = current_game.draft(c_num, ctx.message.author.id)
 
-    if len(final_hands) == 0:
+    if final_hands == None:
+        await ctx.send('Card Drafted')
+
+    elif len(final_hands) == 0:
         await ctx.send('Card not in hand')
     else:
-        await ctx.send('Card Drafted')
+        for i in range(len(player_list)):
+            await player_list[i].send(final_hands[i])
 
 
 
