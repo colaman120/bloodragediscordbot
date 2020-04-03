@@ -52,18 +52,10 @@ async def roll(ctx, number_of_dice: int, number_of_sides: int):
     await ctx.send(', '.join(dice))
 '''
 
-#sets the game on the bot to be Blood Rage
-@bot.command(name='game_br', help='Creates a Blood Rage Game')
-async def create_br(ctx):
-    global current_game
-    current_game = None
-    current_game = BloodRage()
-    await ctx.send('Game set to Blood Rage')
-
 #allows players to join a game
 @bot.command(name='join', help='Add player to current Blood Rage game')
 async def add_player(ctx):
-    global current_game, player_list
+    global current_game, player_list, score
     if current_game == None:
             await ctx.send('No game selected')
     elif current_game.game_id == 'br':
@@ -87,6 +79,34 @@ async def show_players(ctx):
         for i in player_list:
             await ctx.send(i.display_name)
 
+@bot.command(name='add_score', help='Add score to the game being played')
+async def add_score(ctx, score: int):
+    global current_game
+    if current_game == None:
+            await ctx.send('No game selected')
+    elif current_game.game_id == 'br':
+        if current_game.add_glory(ctx.message.author.name,
+                                   ctx.message.author.discriminator, score):
+            await ctx.send('Score added')
+
+    else:
+        await ctx.send('Player not found in current game')
+
+@bot.command(name='show_score', help='Show score of current game')
+async def get_score(ctx):
+    global current_game, player_list
+
+    if current_game == None:
+            await ctx.send('No game selected')
+    elif current_game.game_id == 'br':
+        scores = current_game.get_glory()
+        for i in range(len(scores)):
+            await ctx.send(player_list[i].display_name + ": " + str(scores[i]))
+
+    else:
+        await ctx.send('IDK wtf you did but this shit is broken')
+
+
 #clears all players in game
 @bot.command(name='clear_game', help='Empties player_list')
 async def clear_game(ctx):
@@ -107,6 +127,23 @@ async def remove_player(ctx, un, discrim):
         await ctx.send(un + ' removed from game')
     else:
         await ctx.send(un + ' not found in game')
+
+
+####################################################################
+#                    ______________________                        #
+#                   |                     |                        #
+#-------------------| Blood Rage Specific |------------------------#
+#                   |_____________________|                        #
+#                                                                  #
+####################################################################
+
+#sets the game on the bot to be Blood Rage
+@bot.command(name='game_br', help='Creates a Blood Rage Game')
+async def create_br(ctx):
+    global current_game
+    current_game = None
+    current_game = BloodRage()
+    await ctx.send('Game set to Blood Rage')
 
 #drafts cards based on age and number of players
 @bot.command(name='start_age', help='Begins a new age of drafting (Blood Rage Specific)')
@@ -133,7 +170,6 @@ async def draft_from_dm(ctx, c_num: int):
     else:
         for i in range(len(player_list)):
             await player_list[i].send(final_hands[i])
-
 
 
 ####################################################################

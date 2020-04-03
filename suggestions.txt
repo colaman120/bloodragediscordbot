@@ -1,11 +1,13 @@
 Suggestions:
-Add differentiation between quest, battle, and upgrade cards - done
-Add ability to see current drafted cards
+add clan tracking
 Add ability to see specific card
-add ability to track glory
+Add ability to see current drafted cards
+add hand tracking
 Check sheet 6 to see additional options
 make each card its own line and add descriptions
+
+Add differentiation between quest, battle, and upgrade cards - done
 Include the numbers + include this is final draft for final pull - done
-Differentiate cards in the sheet by the type of card - done
 Add filters to excel sheet - done
-add hand tracking
+Differentiate cards in the sheet by the type of card - done
+add ability to track glory - done

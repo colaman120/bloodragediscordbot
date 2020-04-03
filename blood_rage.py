@@ -57,15 +57,29 @@ class BloodRage:
 
     # returns a list of strings of the players display names
     def get_num_of_players():
-        global player_list
+        global player_list, glory_counter
         return len(player_list)
+
+    def add_glory(self, un, discrim, score):
+        global player_list, glory_counter
+
+        for i in range(len(player_list)):
+            if player_list[i][0] == un and player_list[i][1] == discrim:
+                glory_counter[i] += score
+                return True
+        return False
+
+    def get_glory(self):
+        global glory_counter
+        return glory_counter
+
 
     # removes a single player based on their username and discord discriminator
     def remove_player(br, un, discrim):
         global player_list
         player_removed = False
         for player in player_list:
-            if player[0] == un or player[1] == discrim:
+            if player[0] == un and player[1] == discrim:
                 player_list.remove(player)
                 player_removed = True
         return player_removed
@@ -76,6 +90,8 @@ class BloodRage:
         numbers = np.arange(card_counts[age - 1][len(player_list) - 2])
         to_return = np.random.choice(numbers, size=(len(player_list), 8), replace=False)
         return to_return.tolist()
+
+
 
 
 
@@ -276,17 +292,15 @@ class BloodRage:
 
                     return to_return
 
-
 '''
 #TODO: Fix list_of_nums to understand that it is a list and not an array
 #make number array look nice
 def num_concatenator(self, list_of_nums):
     to_string = ''
-    list_of_nums = list_of_nums.astype(str)
 
-    for i in range(list_of_nums.size):
-        to_string = to_string + list_of_nums[i]
-        if i != list_of_nums.size - 1:
+    for i in range(len(list_of_nums)):
+        to_string = to_string + str(list_of_nums[i])
+        if i != len(list_of_nums) - 1:
             to_string = to_string + ', '
 
     return to_string
