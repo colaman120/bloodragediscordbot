@@ -56,6 +56,7 @@ async def roll(ctx, number_of_dice: int, number_of_sides: int):
 @bot.command(name='game_br', help='Creates a Blood Rage Game')
 async def create_br(ctx):
     global current_game
+    current_game = None
     current_game = BloodRage()
     await ctx.send('Game set to Blood Rage')
 
@@ -108,7 +109,7 @@ async def remove_player(ctx, un, discrim):
         await ctx.send(un + ' not found in game')
 
 #drafts cards based on age and number of players
-@bot.command(name='start_age', help='Begins a new age of drafting')
+@bot.command(name='start_age', help='Begins a new age of drafting (Blood Rage Specific)')
 async def start_age(ctx, age: int):
     global current_game
     hands = current_game.start_age(age)
@@ -119,7 +120,7 @@ async def start_age(ctx, age: int):
             await player_list[i].send(hands[i])
 
 
-@bot.command(name='draft', help='Draft a card from the given hand')
+@bot.command(name='draft', help='Draft a card from the given hand (Blood Rage Specific)')
 async def draft_from_dm(ctx, c_num: int):
     global current_game, player_list
     final_hands = current_game.draft(c_num, ctx.message.author.id)

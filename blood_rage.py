@@ -80,11 +80,19 @@ class BloodRage:
 
 
     #makes card array look nice
-    def card_concatenator(self, list_of_cards):
+    def card_concatenator(self, list_of_nums, list_of_cards):
+        global current_age
         to_string = ''
 
         for i in range(len(list_of_cards)):
-            to_string = to_string + list_of_cards[i]
+            card_type = self.get_card_type(list_of_nums[i], current_age)
+            if card_type == 0:
+                to_string = to_string + '*' + list_of_cards[i] + '*'
+            elif card_type == 1:
+                to_string = to_string + '__' + list_of_cards[i] + '__'
+            elif card_type == 2:
+                to_string = to_string + '**' + list_of_cards[i] + '**'
+
             if i != len(list_of_cards) - 1:
                 to_string = to_string + ', '
 
@@ -92,15 +100,49 @@ class BloodRage:
 
     #TODO: Fix list_of_nums to understand that it is a list and not an array
     def num_card_concatenator(self, list_of_nums, list_of_cards):
+        global current_age
         to_string = ''
-        list_of_nums = list_of_nums.astype(str)
+        list_of_nums_int = list_of_nums.astype(int)
+        list_of_nums_str = list_of_nums.astype(str)
 
         for i in range(len(list_of_cards)):
-            to_string = to_string + list_of_nums[i] + ": " + list_of_cards[i]
+            card_type = self.get_card_type(list_of_nums_int[i], current_age)
+            if card_type == 0:
+                to_string = to_string + list_of_nums_str[i] + ": " + '*' + list_of_cards[i] + '*'
+            elif card_type == 1:
+                to_string = to_string + list_of_nums_str[i] + ": " + '__' + list_of_cards[i] + '__'
+            elif card_type == 2:
+                to_string = to_string + list_of_nums_str[i] + ": " + '**' + list_of_cards[i] + '**'
+
             if i != len(list_of_cards) - 1:
                 to_string = to_string + ', '
 
         return to_string
+
+    # get the type of card. 0 = upgrade, 1 = quest, 2 = battle
+    def get_card_type(self, card_num, age):
+        global age1_cards, age2_cards, age3_cards
+        card_type = 0
+        type_str = None
+
+        if age == 1:
+            type_str = age1_cards.at[card_num, 'Card Type']
+
+        elif age == 2:
+            type_str = age2_cards.at[card_num, 'Card Type']
+
+        elif age == 3:
+            type_str = age3_cards.at[card_num, 'Card Type']
+
+        if type_str == 'Battle':
+            card_type = 2
+        elif type_str == 'Quest':
+            card_type = 1
+        else:
+            card_type = 0
+
+        return card_type
+
 
     #generates the names of the cards based on the number and age
     def card_name_gen(self, age, card_num):
@@ -159,7 +201,8 @@ class BloodRage:
         cards = np.asarray(cards)
         if cards.size <= len(player_list) * 2:
             for i in range(len(final_hand)):
-                final_hand_str.append(self.card_concatenator(self.card_name_gen(current_age, final_hand[i])))
+                final_hand_str.append(self.card_concatenator(final_hand[i],
+                                        self.card_name_gen(current_age, final_hand[i])))
             return True
         else:
             cards = cards.tolist()

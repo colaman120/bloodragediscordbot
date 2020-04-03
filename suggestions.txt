@@ -1,5 +1,5 @@
 Suggestions:
-Add differentiation between quest, battle, and upgrade cards
+Add differentiation between quest, battle, and upgrade cards - done
 Add ability to see current drafted cards
 Add ability to see specific card
 add ability to track glory
