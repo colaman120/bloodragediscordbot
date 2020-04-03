@@ -5,7 +5,7 @@ Add ability to see specific card
 add ability to track glory
 Check sheet 6 to see additional options
 make each card its own line and add descriptions
-Include the numbers + include this is final draft for final pull
-Differentiate cards in the sheet by the type of card
-Add filters to excel sheet
+Include the numbers + include this is final draft for final pull - done
+Differentiate cards in the sheet by the type of card - done
+Add filters to excel sheet - done
 add hand tracking

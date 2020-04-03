@@ -102,11 +102,11 @@ class BloodRage:
     def num_card_concatenator(self, list_of_nums, list_of_cards):
         global current_age
         to_string = ''
-        list_of_nums_int = list_of_nums.astype(int)
+        #list_of_nums_int = list_of_nums.astype(int)
         list_of_nums_str = list_of_nums.astype(str)
 
         for i in range(len(list_of_cards)):
-            card_type = self.get_card_type(list_of_nums_int[i], current_age)
+            card_type = self.get_card_type(list_of_nums[i], current_age)
             if card_type == 0:
                 to_string = to_string + list_of_nums_str[i] + ": " + '*' + list_of_cards[i] + '*'
             elif card_type == 1:
@@ -201,8 +201,10 @@ class BloodRage:
         cards = np.asarray(cards)
         if cards.size <= len(player_list) * 2:
             for i in range(len(final_hand)):
-                final_hand_str.append(self.card_concatenator(final_hand[i],
+                final_hand[i] = np.sort(final_hand[i])
+                final_hand_str.append(self.num_card_concatenator(final_hand[i],
                                         self.card_name_gen(current_age, final_hand[i])))
+                final_hand[i] = final_hand[i].tolist()
             return True
         else:
             cards = cards.tolist()
@@ -215,7 +217,6 @@ class BloodRage:
         if len(player_list) >= 2:
             cards = copy.deepcopy(br.gen_hands(age))
             current_age = copy.copy(age)
-
             generated_hands = []
 
             for i in range(len(cards)):
