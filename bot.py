@@ -104,8 +104,7 @@ async def get_score(ctx):
             await ctx.send(player_list[i].display_name + ": " + str(scores[i]))
 
     else:
-        await ctx.send('IDK wtf you did but this shit is broken')
-
+        await ctx.send('No score support for this game')
 
 #clears all players in game
 @bot.command(name='clear_game', help='Empties player_list')
@@ -120,7 +119,10 @@ async def clear_game(ctx):
 async def remove_player(ctx, un, discrim):
     global current_game, player_list
 
-    if current_game.remove_player(un, discrim):
+    if current_game == None:
+        await ctx.send('No game selected')
+
+    elif current_game.remove_player(un, discrim):
         for i in range(len(player_list)):
             if player_list[i].name == un and player_list[i].discriminator == discrim:
                 player_list.remove(player_list[i])
@@ -128,6 +130,68 @@ async def remove_player(ctx, un, discrim):
     else:
         await ctx.send(un + ' not found in game')
 
+@bot.command(name='add_stat', help='Add to your stats')
+async def add_stats(ctx, stat, add: int):
+    global current_game
+
+    if current_game == None:
+        await ctx.send('No game selected')
+    elif current_game.game_id == 'br':
+        if stat == 'rage':
+            current_game.increase_rage(add, ctx.message.author.name, ctx.message.author.discriminator)
+        elif stat == 'axes':
+            current_game.increase_axes(add, ctx.message.author.name, ctx.message.author.discriminator)
+        elif stat == 'horns':
+            current_game.increase_horns(add, ctx.message.author.name, ctx.message.author.discriminator)
+    else:
+        await ctx.send('Stat not found')
+
+@bot.command(name='get_hand', help='Shows your current hand')
+async def get_hand(ctx):
+    if current_game == None:
+        await ctx.send('No game selected')
+
+    elif current_game.game_id == 'br':
+        await ctx.send(current_game.get_current_hand(ctx.message.author.name, ctx.message.author.discriminator))
+
+@bot.command(name='get_stats', help='Shows your clan stats')
+async def get_stats(ctx):
+    global current_game
+
+    if current_game == None:
+        await ctx.send('No game selected')
+    elif current_game.game_id == 'br':
+        rage = current_game.get_rage(ctx.message.author.name, ctx.message.author.discriminator)
+        axes = current_game.get_axes(ctx.message.author.name, ctx.message.author.discriminator)
+        horns = current_game.get_horns(ctx.message.author.name, ctx.message.author.discriminator)
+
+        if rage == -1 or axes == -1 or horns == -1:
+            await ctx.send('Player not found')
+        else:
+            await ctx.send('Rage: ' + str(rage))
+            await ctx.send('Axes: ' + str(axes))
+            await ctx.send('Horns: ' + str(horns))
+    else:
+        await ctx.send('Game not found')
+
+@bot.command(name='card', help='View a specific card')
+async def get_card(ctx, age: int, card: int):
+    if current_game == None:
+        await ctx.send('No game selected')
+    elif current_game.game_id == 'br':
+        result = current_game.get_card(age, card)
+        if result == None:
+            await ctx.send('Card not found')
+        else:
+            await ctx.send('Name: ' + result[0])
+            await ctx.send('Card Type: ' + result[1])
+            await ctx.send('Cost/Strength: ' + result[2])
+            await ctx.send('Description: ' + result[3])
+    else:
+        await ctx.send('No implementation for current game')
+
+@bot.command(name='remove_card', help='Removes card from hand')
+async def remove_card
 
 ####################################################################
 #                    ______________________                        #
@@ -149,6 +213,9 @@ async def create_br(ctx):
 @bot.command(name='start_age', help='Begins a new age of drafting (Blood Rage Specific)')
 async def start_age(ctx, age: int):
     global current_game
+    if current_game == None:
+        await ctx.send('No game selected')
+
     hands = current_game.start_age(age)
     if len(hands) == 0:
         await ctx.send('Not enough players')
@@ -160,6 +227,9 @@ async def start_age(ctx, age: int):
 @bot.command(name='draft', help='Draft a card from the given hand (Blood Rage Specific)')
 async def draft_from_dm(ctx, c_num: int):
     global current_game, player_list
+    if current_game == None:
+        await ctx.send('No game selected')
+
     final_hands = current_game.draft(c_num, ctx.message.author.id)
 
     if final_hands == None:
@@ -170,6 +240,10 @@ async def draft_from_dm(ctx, c_num: int):
     else:
         for i in range(len(player_list)):
             await player_list[i].send(final_hands[i])
+
+
+
+
 
 
 ####################################################################

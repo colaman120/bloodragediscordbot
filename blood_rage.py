@@ -14,6 +14,14 @@ class BloodRage:
     final_hand = []
     final_hand_str = []
     glory_counter = []
+    rage = []
+    axes = []
+    horns = []
+    clan_upgrade_cards = []
+    warrior_upgrade_cards = []
+    leader_upgrade_cards = []
+    ship_upgrade_cards = []
+    monster_upgrade_cards = []
     game_id = 'br'
 
     card_counts = np.array([[22, 28, 36, 44],
@@ -25,7 +33,10 @@ class BloodRage:
     age3_cards = pandas.read_csv('data/age_3.csv', index_col='Card #')
 
     def __init__(self):
-        global player_list, cards, draft, current_age, final_hand, final_hand_str, glory_counter, game_id, card_counts, age1_cards, age2_cards, age3_cards
+        global player_list, cards, draft, current_age, final_hand, final_hand_str, glory_counter
+        global game_id, card_counts, age1_cards, age2_cards, age3_cards, rage, axes, horns
+        global clan_upgrade_cards, warrior_upgrade_cards, leader_upgrade_cards, ship_upgrade_cards, monster_upgrade_cards
+
         player_list = []
         cards = []
         draft = []
@@ -33,6 +44,14 @@ class BloodRage:
         final_hand = []
         final_hand_str = []
         glory_counter = []
+        rage = []
+        axes = []
+        horns = []
+        clan_upgrade_cards = []
+        warrior_upgrade_cards = []
+        leader_upgrade_cards = []
+        ship_upgrade_cards = []
+        monster_upgrade_cards = []
         game_id = 'br'
 
         card_counts = np.array([[22, 28, 36, 44],
@@ -45,12 +64,17 @@ class BloodRage:
 
     #adds a player to the blood rage game
     def add_player(br, un, discrim, id):
-        global player_list, draft, final_hand, glory_counter
+        global player_list, draft, final_hand, glory_counter, rage, axes, horns, clan_upgrade_cards, monster_upgrade_cards
         if len(player_list) < 5:
             player_list.append([un, discrim, id])
             draft.append(-1)
             final_hand.append([])
             glory_counter.append(0)
+            rage.append(6)
+            axes.append(3)
+            horns.append(4)
+            clan_upgrade_cards.append([])
+            monster_upgrade_cards.append([])
             return True
         else:
             return False
@@ -73,6 +97,86 @@ class BloodRage:
         global glory_counter
         return glory_counter
 
+    def increase_rage(self, increase, un, discrim):
+        global player_list, rage
+
+        for i in range(len(player_list)):
+            if player_list[i][0] == un and player_list[i][1] == discrim:
+                rage[i] += increase
+                return True
+        return False
+
+    def get_rage(self, un, discrim):
+        global player_list, rage
+
+        for i in range(len(player_list)):
+            if player_list[i][0] == un and player_list[i][1] == discrim:
+                return rage[i]
+        return -1
+
+    def increase_axes(self, increase, un, discrim):
+        global player_list, axes
+
+        for i in range(len(player_list)):
+            if player_list[i][0] == un and player_list[i][1] == discrim:
+                axes[i] += increase
+                return True
+        return False
+
+    def get_axes(self, un, discrim):
+        global player_list, axes
+
+        for i in range(len(player_list)):
+            if player_list[i][0] == un and player_list[i][1] == discrim:
+                return axes[i]
+        return -1
+
+    def increase_horns(self, increase, un, discrim):
+        global player_list, horns
+
+        for i in range(len(player_list)):
+            if player_list[i][0] == un and player_list[i][1] == discrim:
+                horns[i] += increase
+                return True
+        return False
+
+    def get_horns(self, un, discrim):
+        global player_list, horns
+
+        for i in range(len(player_list)):
+            if player_list[i][0] == un and player_list[i][1] == discrim:
+                return horns[i]
+        return -1
+
+    def get_current_hand(self, un, discrim):
+        global player_list, final_hand, current_age
+
+        for i in range(len(player_list)):
+            if player_list[i][0] == un and player_list[i][1] == discrim:
+                return self.num_card_concatenator(np.sort(final_hand[i]), self.card_name_gen(current_age, final_hand[i]))
+        return 'No hand found'
+
+    def get_card(self, age, card):
+        global age1_cards, age2_cards, age3_cards
+        to_return = []
+
+        if age == 1:
+            to_return.append(str(age1_cards.at[card, 'Name']))
+            to_return.append(str(age1_cards.at[card, 'Card Type']))
+            to_return.append(str(age1_cards.at[card, 'Rage']))
+            to_return.append(str(age1_cards.at[card, 'Card Description']))
+        elif age == 2:
+            to_return.append(str(age2_cards.at[card, 'Name']))
+            to_return.append(str(age2_cards.at[card, 'Card Type']))
+            to_return.append(str(age2_cards.at[card, 'Rage']))
+            to_return.append(str(age2_cards.at[card, 'Card Description']))
+        elif age == 3:
+            to_return.append(str(age3_cards.at[card, 'Name']))
+            to_return.append(str(age3_cards.at[card, 'Card Type']))
+            to_return.append(str(age3_cards.at[card, 'Rage']))
+            to_return.append(str(age3_cards.at[card, 'Card Description']))
+
+        return to_return
 
     # removes a single player based on their username and discord discriminator
     def remove_player(br, un, discrim):
@@ -90,10 +194,6 @@ class BloodRage:
         numbers = np.arange(card_counts[age - 1][len(player_list) - 2])
         to_return = np.random.choice(numbers, size=(len(player_list), 8), replace=False)
         return to_return.tolist()
-
-
-
-
 
     #makes card array look nice
     def card_concatenator(self, list_of_nums, list_of_cards):
