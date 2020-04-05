@@ -1,5 +1,4 @@
 Suggestions:
-add clan tracking
 add hand tracking
 Check sheet 6 to see additional options
 make each card its own line and add descriptions
@@ -11,6 +10,7 @@ Include the numbers + include this is final draft for final pull - done
 add ability to track glory - done
 Add ability to see current drafted cards - done
 Add ability to see specific card - done
+add clan tracking - done
 
  - non code stuff
 Add filters to excel sheet - done

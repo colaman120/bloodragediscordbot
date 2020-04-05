@@ -73,8 +73,11 @@ class BloodRage:
             rage.append(6)
             axes.append(3)
             horns.append(4)
-            clan_upgrade_cards.append([])
-            monster_upgrade_cards.append([])
+            clan_upgrade_cards.append([None, None, None])
+            monster_upgrade_cards.append([None, None])
+            warrior_upgrade_cards.append(None)
+            leader_upgrade_cards.append(None)
+            ship_upgrade_cards.append(None)
             return True
         else:
             return False
@@ -176,6 +179,72 @@ class BloodRage:
             to_return.append(str(age3_cards.at[card, 'Rage']))
             to_return.append(str(age3_cards.at[card, 'Card Description']))
 
+        return to_return
+
+    def set_upgrades(self, card, slot, un, discrim):
+        global player_list, clan_upgrade_cards, warrior_upgrade_cards, leader_upgrade_cards, ship_upgrade_cards, monster_upgrade_cards, current_age, cards
+
+        index = -1
+        for i in range(len(player_list)):
+            if player_list[i][0] == un and player_list[i][1] == discrim:
+                index = i
+
+        if index == -1:
+            return 0
+
+        card_found = False
+        for j in cards[index]:
+            if j == card:
+                card_found = True
+                break
+
+        if card_found == False:
+            return 1
+
+        card_name = ''
+        card_type = ''
+
+        if current_age == 1:
+            card_name = age1_cards.at[card, 'Name']
+            card_type = age1_cards.at[card, 'Card Type']
+        elif current_age == 2:
+            card_name = age2_cards.at[card, 'Name']
+            card_type = age2_cards.at[card, 'Card Type']
+        elif current_age == 3:
+            card_name = age3_cards.at[card, 'Name']
+            card_type = age3_cards.at[card, 'Card Type']
+        else:
+            return 2
+
+        print(card_name)
+
+        if card_type == 'Monster':
+            monster_upgrade_cards[index][slot - 1] = card_name
+        elif card_type == 'Leader':
+            leader_upgrade_cards[index] = card_name
+        elif card_type == 'Warrior':
+            warrior_upgrade_cards[index] = card_name
+        elif card_type == 'Ship':
+            ship_upgrade_cards[index] = card_name
+        elif card_type == 'Clan':
+            clan_upgrade_cards[index][slot - 1] = card_name
+        else:
+            return 3
+
+        return 4
+
+
+    def get_upgrades(self, un, discrim):
+        global player_list, clan_upgrade_cards, warrior_upgrade_cards, leader_upgrade_cards, ship_upgrade_cards, monster_upgrade_cards
+
+        to_return = []
+        for i in range(len(player_list)):
+            if player_list[i][0] == un and player_list[i][1] == discrim:
+                to_return.append(clan_upgrade_cards[i])
+                to_return.append(monster_upgrade_cards[i])
+                to_return.append(leader_upgrade_cards[i])
+                to_return.append(ship_upgrade_cards[i])
+                to_return.append(warrior_upgrade_cards[i])
         return to_return
 
     # removes a single player based on their username and discord discriminator
@@ -328,12 +397,14 @@ class BloodRage:
 
     #provides the initial hands per age
     def start_age(br, age):
-        global player_list, cards, current_age
+        global player_list, cards, current_age, final_hand, final_hand_str
 
         if len(player_list) >= 2:
             cards = copy.deepcopy(br.gen_hands(age))
             current_age = copy.copy(age)
             generated_hands = []
+            final_hand.clear()
+            final_hand_str.clear()
 
             for i in range(len(cards)):
                 cards[i] = np.sort(cards[i])
@@ -384,8 +455,6 @@ class BloodRage:
 
                     draft.clear()
                     cards = []
-                    final_hand.clear()
-                    final_hand_str.clear()
                     for i in player_list:
                         draft.append(-1)
                         final_hand.append([])

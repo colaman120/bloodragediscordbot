@@ -16,3 +16,11 @@ card_counts = np.asarray(card_counts)
 print(card_counts)
 card_counts = card_counts.tolist()
 print(card_counts)
+
+list_example = []
+
+list_example.append([3, 4])
+list_example.append(5)
+
+
+print(list_example)
