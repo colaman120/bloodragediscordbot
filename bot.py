@@ -192,13 +192,21 @@ async def get_card(ctx, age: int, card: int):
     else:
         await ctx.send('No implementation for current game')
 
-'''
+
 @bot.command(name='remove_card', help='Removes card from hand')
 async def remove_card(ctx, card: int):
     if current_game == None:
         await ctx.send('No game selected')
     elif current_game.game_id == 'br':
-'''
+        result = current_game.remove_card(card, ctx.message.author.name, ctx.message.author.discriminator)
+        if result == 0:
+            await ctx.send('Player not found')
+        elif result == 1:
+            await ctx.send('Card not found')
+        else:
+            await ctx.send('Card removed from hand')
+    else:
+        await ctx.send('No implementation for game yet')
 
 ####################################################################
 #                    ______________________                        #

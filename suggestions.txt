@@ -15,3 +15,8 @@ add clan tracking - done
  - non code stuff
 Add filters to excel sheet - done
 Differentiate cards in the sheet by the type of card - done
+
+If rewritten:
+ - create a game class
+ - create a clan class
+ - add find player helper method

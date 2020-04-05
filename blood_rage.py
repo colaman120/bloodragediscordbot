@@ -68,8 +68,8 @@ class BloodRage:
         if len(player_list) < 5:
             player_list.append([un, discrim, id])
             draft.append(-1)
-            final_hand.append([])
             glory_counter.append(0)
+            final_hand.append([])
             rage.append(6)
             axes.append(3)
             horns.append(4)
@@ -192,8 +192,10 @@ class BloodRage:
         if index == -1:
             return 0
 
+        print(index)
+
         card_found = False
-        for j in cards[index]:
+        for j in final_hand[index]:
             if j == card:
                 card_found = True
                 break
@@ -216,8 +218,6 @@ class BloodRage:
         else:
             return 2
 
-        print(card_name)
-
         if card_type == 'Monster':
             monster_upgrade_cards[index][slot - 1] = card_name
         elif card_type == 'Leader':
@@ -231,6 +231,7 @@ class BloodRage:
         else:
             return 3
 
+        self.remove_card(card, un, discrim)
         return 4
 
 
@@ -249,13 +250,38 @@ class BloodRage:
 
     # removes a single player based on their username and discord discriminator
     def remove_player(br, un, discrim):
-        global player_list
+        global player_list, final_hand, final_hand_str
         player_removed = False
         for player in player_list:
             if player[0] == un and player[1] == discrim:
                 player_list.remove(player)
                 player_removed = True
         return player_removed
+
+    def remove_card(br, card, un, discrim):
+        global player_list, final_hand
+        index = -1
+        for i in range(len(player_list)):
+            if player_list[i][0] == un and player_list[i][1] == discrim:
+                index = i
+
+        if index == -1:
+            return 0
+
+        card_index = -1
+        for j in range(len(final_hand[index])):
+            if j == card:
+                card_index = j
+                break
+
+        if card_index == -1:
+            return 1
+
+        final_hand[index].pop(card_index)
+        final_hand_str[index] = br.num_card_concatenator(np.sort(final_hand[index]),
+                                                            br.card_name_gen(current_age, np.sort(final_hand[i])))
+
+        return 2
 
     #generates hands
     def gen_hands(self, age):
@@ -403,8 +429,6 @@ class BloodRage:
             cards = copy.deepcopy(br.gen_hands(age))
             current_age = copy.copy(age)
             generated_hands = []
-            final_hand.clear()
-            final_hand_str.clear()
 
             for i in range(len(cards)):
                 cards[i] = np.sort(cards[i])
@@ -457,7 +481,6 @@ class BloodRage:
                     cards = []
                     for i in player_list:
                         draft.append(-1)
-                        final_hand.append([])
 
                     return to_return
 
