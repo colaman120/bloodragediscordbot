@@ -18,24 +18,6 @@ client = discord.Client()
 bot = commands.Bot(command_prefix='!')
 current_game = None
 player_list = []
-#cards = np.zeros(1)
-#draft = []
-#current_age = 0
-#final_hand = []
-#final_hand_str = []
-#glory_counter = []
-# [i] = age
-# [j] = players
-
-
-
-#card_counts = np.array([[22, 28, 36, 44],
-#                        [21, 27, 35, 43],
-#                        [21, 27, 35, 43]])
-
-#age1_cards = pandas.read_csv('data/age_1.csv', index_col='Card #')
-#age2_cards = pandas.read_csv('data/age_2.csv', index_col='Card #')
-#age3_cards = pandas.read_csv('data/age_3.csv', index_col='Card #')
 
 # displays bot connection to discord
 @bot.event
@@ -55,7 +37,7 @@ async def roll(ctx, number_of_dice: int, number_of_sides: int):
 #allows players to join a game
 @bot.command(name='join', help='Add player to current Blood Rage game')
 async def add_player(ctx):
-    global current_game, player_list, score
+    global current_game, player_list
     if current_game == None:
             await ctx.send('No game selected')
     elif current_game.game_id == 'br':

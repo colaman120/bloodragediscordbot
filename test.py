@@ -10,7 +10,7 @@ age2_cards = pandas.read_csv('data/age_2.csv', index_col='Card #')
 age3_cards = pandas.read_csv('data/age_3.csv', index_col='Card #')
 
 print(age1_cards.at['Troll', 'Card Type'])
-'''
+
 
 card_counts = np.asarray(card_counts)
 print(card_counts)
@@ -24,3 +24,7 @@ list_example.append(5)
 
 
 print(list_example)
+'''
+
+x = []
+print(len(x))
