@@ -19,7 +19,7 @@ class BloodRage(BoardGame):
     class BRPlayer(Player):
         #constructor for the player class
         def __init__(self, set_player):            
-            super.__init__(set_player)
+            super().__init__(set_player)
 
             self.rage = 6
             self.axes = 3
@@ -31,6 +31,7 @@ class BloodRage(BoardGame):
             self.ship_uc = (0, 0)
             self.glory = 0
             self.hand = []
+            self.quests = []
 
         #gets the discord player object of the blood rage player
         def get_player_object(self):
@@ -38,15 +39,18 @@ class BloodRage(BoardGame):
 
         #changes the rage clan stat of the current player
         def change_rage(self, delta):
-            self.rage += delta
+            if self.rage < 12:
+                self.rage += delta
 
         #changes the axes clan stat of the current player
         def change_axes(self, delta):
-            self.axes += delta
+            if self.axes < 10:
+                self.axes += delta
         
         #changes the horns clan stat of the current player
         def change_horns(self, delta):
-            self.horns += delta
+            if self.horns < 10:
+                self.horns += delta
 
         #changes the glory of the current player
         def change_glory(self, delta):
@@ -125,6 +129,26 @@ class BloodRage(BoardGame):
         def get_hand(self):
             return self.hand
 
+        def set_quest(self, new_quest, age):
+            self.quests.append((new_quest, age))
+
+        def get_quest(self):
+            return self.quests
+
+        def clear_quest(self, slot):
+            self.quests.pop(slot - 1)
+
+        def clear_quests(self):
+            self.quests.clear()
+
+        def remove_card(self, card, age):
+            for i in len(range(self.hand)):
+                if self.hand[i][0] == card and self.hand[i][1] == age:
+                    self.hand.pop(i)
+                    return 0
+            return 1
+
+
 ####################################################################
 #                    ______________________                        #
 #                   |                     |                        #
@@ -134,7 +158,7 @@ class BloodRage(BoardGame):
 ####################################################################
 
     def __init__(self):
-        super.__init__('br')
+        super().__init__('br')
         self.current_age = 0
         self.draftable_cards = []
         self.drafted_cards = []
@@ -142,8 +166,8 @@ class BloodRage(BoardGame):
         self.final_hand_str = []
 
         self.card_counts = np.array([[22, 28, 36, 44],
-                                    [21, 27, 35, 43],
-                                    [21, 27, 35, 43]])
+                                     [21, 27, 35, 43],
+                                     [21, 27, 35, 43]])
 
         self.age1_cards = pandas.read_csv('data/age_1.csv', index_col='Card #')
         self.age2_cards = pandas.read_csv('data/age_2.csv', index_col='Card #')
@@ -154,26 +178,43 @@ class BloodRage(BoardGame):
         if len(self.player_list) > 5:
             return False
 
-        for i in len(range(self.player_list)):
+        for i in range(len(self.player_list)):
             if self.player_list[i] == player_to_add:
                 return False
             
         new_player = self.BRPlayer(player_to_add)
         self.player_list.append(new_player)
+        self.final_hand.append([])
+        self.drafted_cards.append(-1)
         return True
 
     #remove a player from the game
-    def remove_player(self, player_to_remove):
-        found, index = self.find_player(player_to_remove)
-        if found == False:
-            return False
-        else:
-            self.player_list.pop(index)
-            return True
+    def remove_player(self, player_un, player_discrim):
+        for i in range(len(self.player_list)):
+            if self.player_list[i].get_player_object().name == player_un and self.player_list[i].get_player_object().discriminator == player_discrim:
+                self.player_list.pop(i)
+                return True
+        return False
 
     # return the number of players in the current game
     def num_of_players(self):
         return len(self.player_list)
+
+    #adds or subtracts glory to the given player
+    def add_glory(self, player, delta):
+        found, index = self.find_player(player)
+        if found:
+            self.player_list[index].change_glory(delta)
+            return True
+        else:
+            return False
+
+    #returns the scores of all players
+    def get_glory(self):
+        to_return = []
+        for i in range(len(self.player_list)):
+            to_return.append(self.player_list[i].get_glory())
+        return to_return
 
     #returns a description of the card based on the number and age of the card
     def get_card(self, age, card):
@@ -196,36 +237,33 @@ class BloodRage(BoardGame):
             to_return.append(str(self.age3_cards.at[card, 'Card Description']))
 
         return to_return
+
+    def get_current_hand(self, player):
+        found, index = self.find_player(player)
+        if found:
+            return self.num_card_concatenator(np.sort(self.player_list[index].get_hand()),
+                 self.card_name_gen(self.current_age, self.player_list[index].get_hand()))
+        return 'No hand found'
     
     #returns whether or not a player was found and at what index they were found
     def find_player(self, player_to_find):
         index = -1
 
-        for i in len(range(self.player_list)):
-            if player_to_find == self.player_list[i]:
+        for i in range(len(self.player_list)):
+            if player_to_find == self.player_list[i].get_player_object():
                 index = i
                 return True, index
         return False, index
 
-'''
-    def remove_card(self, card, player):
+    def remove_card(self, card, age, player):
         found, index = self.find_player(player)
+        if found:
+            return self.player_list[index].remove_card(card, age)
+        else: 
+            return 2
+        
+        
 
-        card_index = -1
-        for j in range(len(self.final_hand[index])):
-            if j == card:
-                card_index = j
-                break
-
-        if card_index == -1:
-            return 1
-
-        final_hand[index].pop(card_index)
-        final_hand_str[index] = self.num_card_concatenator(np.sort(final_hand[index]),
-                                                            self.card_name_gen(current_age, np.sort(final_hand[i])))
-
-        return 2
-'''
     #generates hands
     def gen_hands(self, age):
         numbers = np.arange(self.card_counts[age - 1][len(self.player_list) - 2])
@@ -337,10 +375,10 @@ class BloodRage(BoardGame):
             self.draftable_cards[i + 1] = self.draftable_cards[i]
 
         self.draftable_cards[0] = temp
-        self.draftable_cards = caself.draftable_cardsrds.tolist()
+        self.draftable_cards = self.draftable_cards.tolist()
 
         self.drafted_cards.clear()
-        for i in player_list:
+        for i in self.player_list:
             self.drafted_cards.append(-1)
 
     #checks if draft is over
@@ -377,7 +415,7 @@ class BloodRage(BoardGame):
     def draft(self, c_num, author_id):
         card_drafted = False
         for i in range(len(self.player_list)):
-            if author_id == self.player_list[i].id:
+            if author_id == self.player_list[i].get_player_object().id:
                 for j in range(len(self.draftable_cards[i])):
                     if c_num == self.draftable_cards[i][j]:
                         self.drafted_cards[i] = c_num
@@ -408,9 +446,9 @@ class BloodRage(BoardGame):
 
                     self.drafted_cards.clear()
                     self.draftable_cards = []
-                    for i in self.player_list:
+                    for i in range(len(self.player_list)):
                         self.drafted_cards.append(-1)
-                        for j in self.final_hand[i]:
+                        for j in range(len(self.final_hand[i])):
                             self.player_list[i].add_to_hand(self.final_hand[i][j], self.current_age)
 
                     return to_return
