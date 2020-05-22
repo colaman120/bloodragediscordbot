@@ -110,7 +110,7 @@ async def remove_player(ctx, un, discrim):
     else:
         await ctx.send(un + ' not found in game')
 
-@bot.command(name='add_stat', help='Add to your stats')
+@bot.command(name='add_stat', help='Add to your stats (Parameters: Stat, Delta)')
 async def add_stats(ctx, stat, add: int):
     global current_game
 
@@ -188,8 +188,8 @@ async def get_card(ctx, age: int, card: int):
         await ctx.send('No implementation for current game')
 
 
-@bot.command(name='remove_card', help='Removes card from hand')
-async def remove_card(ctx, card: int, age: int):
+@bot.command(name='remove_card', help='Removes card from hand (Parameters: Age, Card)')
+async def remove_card(ctx, age: int, card: int):
     if current_game == None:
         await ctx.send('No game selected')
     elif current_game.game_id == 'br':
@@ -227,7 +227,9 @@ async def start_age(ctx, age: int):
         await ctx.send('Current game not Blood Rage')
 
     hands = current_game.start_age(age)
-    if len(hands) == 0:
+    if hands == None:
+        await ctx.send('Discard to 1 card in hand')
+    elif len(hands) == 0:
         await ctx.send('Not enough players')
     else:
         player_list = current_game.get_player_list()

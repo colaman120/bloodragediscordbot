@@ -142,7 +142,7 @@ class BloodRage(BoardGame):
             self.quests.clear()
 
         def remove_card(self, card, age):
-            for i in len(range(self.hand)):
+            for i in range(len(self.hand)):
                 if self.hand[i][0] == card and self.hand[i][1] == age:
                     self.hand.pop(i)
                     return 0
@@ -241,8 +241,14 @@ class BloodRage(BoardGame):
     def get_current_hand(self, player):
         found, index = self.find_player(player)
         if found:
-            return self.num_card_concatenator(np.sort(self.player_list[index].get_hand()),
-                 self.card_name_gen(self.current_age, self.player_list[index].get_hand()))
+            current_hand = self.player_list[index].get_hand()
+            hand_num = []
+            hand_name = []
+            for i in range(len(current_hand)):
+                hand_num.append(current_hand[i][0])
+                hand_name.append(self.card_name_gen(current_hand[i][1], current_hand[i][0]))
+
+            return self.num_card_concatenator(np.array(hand_num), hand_name)
         return 'No hand found'
     
     #returns whether or not a player was found and at what index they were found
@@ -261,15 +267,13 @@ class BloodRage(BoardGame):
             return self.player_list[index].remove_card(card, age)
         else: 
             return 2
-        
-        
-
+    
     #generates hands
     def gen_hands(self, age):
         numbers = np.arange(self.card_counts[age - 1][len(self.player_list) - 2])
         to_return = np.random.choice(numbers, size=(len(self.player_list), 8), replace=False)
         return to_return.tolist()
-
+    '''
     #makes card array look nice
     def card_concatenator(self, list_of_nums, list_of_cards):
         to_string = ''
@@ -287,6 +291,7 @@ class BloodRage(BoardGame):
                 to_string = to_string + ', '
 
         return to_string
+    '''
 
     #creates a list of cards with numbers and card names to make drafting easier
     def num_card_concatenator(self, list_of_nums, list_of_cards):
@@ -334,21 +339,31 @@ class BloodRage(BoardGame):
     #generates the names of the cards based on the number and age
     def card_name_gen(self, age, card_num):
         to_return = []
-        for i in card_num:
+        if type(card_num) == int:
             if age == 1:
-                to_return.append(self.age1_cards.at[i, 'Name'])
+                return self.age1_cards.at[card_num, 'Name']
             elif age == 2:
-                to_return.append(self.age2_cards.at[i, 'Name'])
+                return self.age2_cards.at[card_num, 'Name']
             elif age == 3:
-                to_return.append(self.age3_cards.at[i, 'Name'])
+                return self.age3_cards.at[card_num, 'Name']
+
+        else:
+            for i in card_num:
+                if age == 1:
+                    to_return.append(self.age1_cards.at[i, 'Name'])
+                elif age == 2:
+                    to_return.append(self.age2_cards.at[i, 'Name'])
+                elif age == 3:
+                    to_return.append(self.age3_cards.at[i, 'Name'])
 
         return to_return
 
     #checks if everyone has drafted
     def check_all_draft(self):
-        for i in range(len(self.drafted_cards)):
-            if self.drafted_cards[i] == -1:
-                return False
+        if len(self.player_list) >= 2:
+            for i in range(len(self.drafted_cards)):
+                if self.drafted_cards[i] == -1:
+                    return False
 
         return True
 
@@ -397,6 +412,10 @@ class BloodRage(BoardGame):
 
     #provides the initial hands per age
     def start_age(self, age):
+        for i in range(len(self.player_list)):
+            if len(self.player_list[i].get_hand()) > 1:
+                return None
+
         if len(self.player_list) >= 2:
             self.draftable_cards = copy.deepcopy(self.gen_hands(age))
             self.current_age = copy.copy(age)
@@ -412,10 +431,10 @@ class BloodRage(BoardGame):
             return []
 
     #advances draft and accepts card inputs
-    def draft(self, c_num, author_id):
+    def draft(self, c_num, player):
         card_drafted = False
         for i in range(len(self.player_list)):
-            if author_id == self.player_list[i].get_player_object().id:
+            if player == self.player_list[i].get_player_object():
                 for j in range(len(self.draftable_cards[i])):
                     if c_num == self.draftable_cards[i][j]:
                         self.drafted_cards[i] = c_num
