@@ -243,7 +243,7 @@ async def draft_from_dm(ctx, c_num: int):
     if current_game == None:
         await ctx.send('Current game not Blood Rage')
 
-    final_hands = current_game.draft(c_num, ctx.message.author.id)
+    final_hands = current_game.draft(c_num, ctx.message.author)
 
     if final_hands == None:
         await ctx.send('Card Drafted')

@@ -162,7 +162,7 @@ class BloodRage(BoardGame):
         self.current_age = 0
         self.draftable_cards = []
         self.drafted_cards = []
-        self.final_hand = []
+#        self.final_hand = []
         self.final_hand_str = []
 
         self.card_counts = np.array([[22, 28, 36, 44],
@@ -184,7 +184,7 @@ class BloodRage(BoardGame):
             
         new_player = self.BRPlayer(player_to_add)
         self.player_list.append(new_player)
-        self.final_hand.append([])
+#        self.final_hand.append([])
         self.drafted_cards.append(-1)
         return True
 
@@ -244,11 +244,13 @@ class BloodRage(BoardGame):
             current_hand = self.player_list[index].get_hand()
             hand_num = []
             hand_name = []
+            hand_ages = []
             for i in range(len(current_hand)):
                 hand_num.append(current_hand[i][0])
                 hand_name.append(self.card_name_gen(current_hand[i][1], current_hand[i][0]))
+                hand_ages.append(current_hand[i][1])
 
-            return self.num_card_concatenator(np.array(hand_num), hand_name)
+            return self.num_card_concatenator(np.array(hand_num), hand_name, hand_ages)
         return 'No hand found'
     
     #returns whether or not a player was found and at what index they were found
@@ -273,6 +275,7 @@ class BloodRage(BoardGame):
         numbers = np.arange(self.card_counts[age - 1][len(self.player_list) - 2])
         to_return = np.random.choice(numbers, size=(len(self.player_list), 8), replace=False)
         return to_return.tolist()
+    
     '''
     #makes card array look nice
     def card_concatenator(self, list_of_nums, list_of_cards):
@@ -294,7 +297,7 @@ class BloodRage(BoardGame):
     '''
 
     #creates a list of cards with numbers and card names to make drafting easier
-    def num_card_concatenator(self, list_of_nums, list_of_cards):
+    def num_card_concatenator(self, list_of_nums, list_of_cards, list_of_ages):
         to_string = ''
         list_of_nums_str = list_of_nums.astype(str)
 
@@ -337,24 +340,24 @@ class BloodRage(BoardGame):
 
 
     #generates the names of the cards based on the number and age
-    def card_name_gen(self, age, card_num):
+    def card_name_gen(self, ages, card_num):
         to_return = []
         if type(card_num) == int:
-            if age == 1:
+            if ages == 1:
                 return self.age1_cards.at[card_num, 'Name']
-            elif age == 2:
+            elif ages == 2:
                 return self.age2_cards.at[card_num, 'Name']
-            elif age == 3:
+            elif ages == 3:
                 return self.age3_cards.at[card_num, 'Name']
 
         else:
-            for i in card_num:
-                if age == 1:
-                    to_return.append(self.age1_cards.at[i, 'Name'])
-                elif age == 2:
-                    to_return.append(self.age2_cards.at[i, 'Name'])
-                elif age == 3:
-                    to_return.append(self.age3_cards.at[i, 'Name'])
+            for i in range(len(card_num)):
+                if ages[i] == 1:
+                    to_return.append(self.age1_cards.at[card_num[i], 'Name'])
+                elif ages[i] == 2:
+                    to_return.append(self.age2_cards.at[card_num[i], 'Name'])
+                elif ages[i] == 3:
+                    to_return.append(self.age3_cards.at[card_num[i], 'Name'])
 
         return to_return
 
@@ -379,7 +382,8 @@ class BloodRage(BoardGame):
 
     def add_to_final_hand(self):
         for i in range(len(self.drafted_cards)):
-            self.final_hand[i].append(self.drafted_cards[i])
+#            self.final_hand[i].append(self.drafted_cards[i])
+            self.player_list[i].add_to_hand(self.drafted_cards[i], self.current_age)
 
     #advance the draft by passing the cards around
     def advance_draft(self):
@@ -400,11 +404,20 @@ class BloodRage(BoardGame):
     def check_end_draft(self):
         self.draftable_cards = np.asarray(self.draftable_cards)
         if self.draftable_cards.size <= len(self.player_list) * 2:
-            for i in range(len(self.final_hand)):
-                self.final_hand[i] = np.sort(self.final_hand[i])
-                self.final_hand_str.append(self.num_card_concatenator(self.final_hand[i],
-                                        self.card_name_gen(self.current_age, self.final_hand[i])))
-                self.final_hand[i] = self.final_hand[i].tolist()
+            for i in range(len(self.player_list)):
+                self.player_list[i].hand.sort(key=lambda tup: tup[0])
+                temp_hand = np.asarray(self.player_list[i].get_hand())
+
+                hand_num = np.zeros(len(temp_hand), dtype=np.int32)
+                hand_ages = np.zeros(len(temp_hand), dtype=np.int32)
+
+                for j in range(len(temp_hand)):
+                    hand_num[j] = temp_hand[j][0]
+                    hand_ages[j] = temp_hand[j][1]
+                
+                self.final_hand_str.append(self.num_card_concatenator(hand_num,
+                        self.card_name_gen(hand_ages, hand_num), hand_ages))
+
             return True
         else:
             self.draftable_cards = self.draftable_cards.tolist()
@@ -423,8 +436,11 @@ class BloodRage(BoardGame):
 
             for i in range(len(self.draftable_cards)):
                 self.draftable_cards[i] = np.sort(self.draftable_cards[i])
-                hand = self.card_name_gen(age, self.draftable_cards[i])
-                generated_hands.append(self.num_card_concatenator(self.draftable_cards[i], hand))
+                
+                ages = np.zeros(8)
+                ages.fill(self.current_age)
+                hand = self.card_name_gen(ages, self.draftable_cards[i])
+                generated_hands.append(self.num_card_concatenator(self.draftable_cards[i], hand, ages))
 
             return generated_hands
         else:
@@ -454,8 +470,12 @@ class BloodRage(BoardGame):
                     to_return = []
                     for i in range(len(self.draftable_cards)):
                         self.draftable_cards[i] = np.sort(self.draftable_cards[i])
-                        hand = self.card_name_gen(self.current_age, self.draftable_cards[i])
-                        to_return.append(self.num_card_concatenator(self.draftable_cards[i], hand))
+
+                        ages = np.zeros(8)
+                        ages.fill(self.current_age)
+                        hand = self.card_name_gen(ages, self.draftable_cards[i])
+                        
+                        to_return.append(self.num_card_concatenator(self.draftable_cards[i], hand, ages))
                     return to_return
 
                 else:
@@ -465,9 +485,9 @@ class BloodRage(BoardGame):
 
                     self.drafted_cards.clear()
                     self.draftable_cards = []
+                    self.final_hand_str.clear()
+
                     for i in range(len(self.player_list)):
                         self.drafted_cards.append(-1)
-                        for j in range(len(self.final_hand[i])):
-                            self.player_list[i].add_to_hand(self.final_hand[i][j], self.current_age)
 
                     return to_return
