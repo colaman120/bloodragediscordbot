@@ -162,9 +162,8 @@ class BloodRage(BoardGame):
         self.current_age = 0
         self.draftable_cards = []
         self.drafted_cards = []
-#        self.final_hand = []
         self.final_hand_str = []
-
+        self.draft_phase = False
         self.card_counts = np.array([[22, 28, 36, 44],
                                      [21, 27, 35, 43],
                                      [21, 27, 35, 43]])
@@ -184,7 +183,6 @@ class BloodRage(BoardGame):
             
         new_player = self.BRPlayer(player_to_add)
         self.player_list.append(new_player)
-#        self.final_hand.append([])
         self.drafted_cards.append(-1)
         return True
 
@@ -244,14 +242,106 @@ class BloodRage(BoardGame):
             current_hand = self.player_list[index].get_hand()
             hand_num = []
             hand_name = []
-            hand_ages = []
+            hand_ages = np.zeros(len(current_hand), dtype=np.int32)
             for i in range(len(current_hand)):
                 hand_num.append(current_hand[i][0])
                 hand_name.append(self.card_name_gen(current_hand[i][1], current_hand[i][0]))
-                hand_ages.append(current_hand[i][1])
+                hand_ages[i] = current_hand[i][1]
 
             return self.num_card_concatenator(np.array(hand_num), hand_name, hand_ages)
         return 'No hand found'
+
+    def set_upgrades(self, age, card, slot, player):
+        found, index = self.find_player(player)
+        if found == False:
+            return 0
+
+        card_found = False
+        for i in range(len(self.player_list[index].hand)):
+            if self.player_list[index].hand[i][0] == card and self.player_list[index].hand[i][1] == age:
+                card_found = True
+                break
+
+        if card_found == False:
+            return 1
+
+        card_type = ''
+
+        if age == 1:
+            card_type = self.age1_cards.at[card, 'Card Type']
+        elif age == 2:
+            card_type = self.age2_cards.at[card, 'Card Type']
+        elif age == 3:
+            card_type = self.age3_cards.at[card, 'Card Type']
+        else:
+            return 2
+
+        if card_type == 'Monster':
+            self.player_list[index].add_monster_uc(card, age, slot)
+        elif card_type == 'Leader':
+            self.player_list[index].add_leader_uc(card, age)
+        elif card_type == 'Warrior':
+            self.player_list[index].add_warrior_uc(card, age)
+        elif card_type == 'Ship':
+            self.player_list[index].add_ship_uc(card, age)
+        elif card_type == 'Clan':
+            self.player_list[index].add_clan_uc(card, age, slot)
+        else:
+            return 3
+
+        self.remove_card(card, age, player)
+        return 4
+
+    def get_upgrades(self, player):
+        found, index = self.find_player(player)
+        if found == False:
+            return None
+        
+        to_return = []
+        clan_cards = self.player_list[index].get_clan_uc()
+        monster_cards = self.player_list[index].get_monster_uc()
+        leader_card = self.player_list[index].get_leader_uc()
+        ship_card = self.player_list[index].get_ship_uc()
+        warrior_card = self.player_list[index].get_warrior_uc()
+
+        temp = []
+        for i in range(len(clan_cards)):
+            if clan_cards[i] == (0, 0):
+                temp.append('None')
+            else:
+                temp.append(self.num_card_concatenator(np.array([clan_cards[i][0]]), 
+                    self.card_name_gen(clan_cards[i][1], clan_cards[i][0]), np.array([clan_cards[i][1]])))
+        to_return.append(temp)
+
+        temp.clear()
+        for i in range(len(monster_cards)):
+            if clan_cards[i] == (0, 0):
+                temp.append('None')
+            else:
+                temp.append(self.num_card_concatenator(np.array([monster_cards[i][0]]), 
+                    self.card_name_gen(monster_cards[i][1], monster_cards[i][0]), 
+                    np.array([monster_cards[i][1]])))
+        to_return.append(temp)
+
+        if leader_card == (0, 0):
+            to_return.append('None')
+        else:
+            to_return.append(self.num_card_concatenator(np.array([leader_card[0]]),
+                self.card_name_gen(leader_card[1], leader_card[0]), np.array([leader_card[1]])))
+
+        if ship_card == (0, 0):
+            to_return.append('None')
+        else:
+            to_return.append(self.num_card_concatenator(np.array([ship_card[0]]),
+                self.card_name_gen(ship_card[1], ship_card[0]), np.array([ship_card[1]])))
+        
+        if warrior_card == (0, 0):
+            to_return.append('None')
+        else:
+            to_return.append(self.num_card_concatenator(np.array([warrior_card[0]]),
+                self.card_name_gen(warrior_card[1], warrior_card[0]), np.array([warrior_card[1]])))
+
+        return to_return
     
     #returns whether or not a player was found and at what index they were found
     def find_player(self, player_to_find):
@@ -275,45 +365,23 @@ class BloodRage(BoardGame):
         numbers = np.arange(self.card_counts[age - 1][len(self.player_list) - 2])
         to_return = np.random.choice(numbers, size=(len(self.player_list), 8), replace=False)
         return to_return.tolist()
-    
-    '''
-    #makes card array look nice
-    def card_concatenator(self, list_of_nums, list_of_cards):
-        to_string = ''
-
-        for i in range(len(list_of_cards)):
-            card_type = self.get_card_type(list_of_nums[i], self.current_age)
-            if card_type == 0:
-                to_string = to_string + '*' + list_of_cards[i] + '*'
-            elif card_type == 1:
-                to_string = to_string + '__' + list_of_cards[i] + '__'
-            elif card_type == 2:
-                to_string = to_string + '**' + list_of_cards[i] + '**'
-
-            if i != len(list_of_cards) - 1:
-                to_string = to_string + ', '
-
-        return to_string
-    '''
 
     #creates a list of cards with numbers and card names to make drafting easier
     def num_card_concatenator(self, list_of_nums, list_of_cards, list_of_ages):
-        to_string = ''
+        to_return = []
         list_of_nums_str = list_of_nums.astype(str)
+        list_of_ages_str = list_of_ages.astype(str)
 
         for i in range(len(list_of_cards)):
-            card_type = self.get_card_type(list_of_nums[i], self.current_age)
+            card_type = self.get_card_type(list_of_nums[i], list_of_ages[i])
             if card_type == 0:
-                to_string = to_string + list_of_nums_str[i] + ": " + '*' + list_of_cards[i] + '*'
+                to_return.append('(' + list_of_ages_str[i] + ') ' + list_of_nums_str[i] + ": " + '*' + list_of_cards[i] + '*')
             elif card_type == 1:
-                to_string = to_string + list_of_nums_str[i] + ": " + '__' + list_of_cards[i] + '__'
+                to_return.append('(' + list_of_ages_str[i] + ') ' + list_of_nums_str[i] + ": " + '__' + list_of_cards[i] + '__')
             elif card_type == 2:
-                to_string = to_string + list_of_nums_str[i] + ": " + '**' + list_of_cards[i] + '**'
+                to_return.append('(' + list_of_ages_str[i] + ') ' + list_of_nums_str[i] + ": " + '**' + list_of_cards[i] + '**')
 
-            if i != len(list_of_cards) - 1:
-                to_string = to_string + ', '
-
-        return to_string
+        return to_return
 
     # get the type of card. 0 = upgrade, 1 = quest, 2 = battle
     def get_card_type(self, card_num, age):
@@ -370,7 +438,6 @@ class BloodRage(BoardGame):
 
         return True
 
-
     def remove_cards(self):
         self.draftable_cards = np.asarray(self.draftable_cards)
         for i in range(np.size(self.draftable_cards, 0)):
@@ -382,7 +449,6 @@ class BloodRage(BoardGame):
 
     def add_to_final_hand(self):
         for i in range(len(self.drafted_cards)):
-#            self.final_hand[i].append(self.drafted_cards[i])
             self.player_list[i].add_to_hand(self.drafted_cards[i], self.current_age)
 
     #advance the draft by passing the cards around
@@ -425,10 +491,14 @@ class BloodRage(BoardGame):
 
     #provides the initial hands per age
     def start_age(self, age):
+        if self.draft_phase != False:
+            return -1
+
         for i in range(len(self.player_list)):
             if len(self.player_list[i].get_hand()) > 1:
                 return None
 
+        self.draft_phase = True
         if len(self.player_list) >= 2:
             self.draftable_cards = copy.deepcopy(self.gen_hands(age))
             self.current_age = copy.copy(age)
@@ -437,7 +507,7 @@ class BloodRage(BoardGame):
             for i in range(len(self.draftable_cards)):
                 self.draftable_cards[i] = np.sort(self.draftable_cards[i])
                 
-                ages = np.zeros(8)
+                ages = np.zeros(8, dtype=np.int32)
                 ages.fill(self.current_age)
                 hand = self.card_name_gen(ages, self.draftable_cards[i])
                 generated_hands.append(self.num_card_concatenator(self.draftable_cards[i], hand, ages))
@@ -471,7 +541,7 @@ class BloodRage(BoardGame):
                     for i in range(len(self.draftable_cards)):
                         self.draftable_cards[i] = np.sort(self.draftable_cards[i])
 
-                        ages = np.zeros(8)
+                        ages = np.zeros(8, dtype=np.int32)
                         ages.fill(self.current_age)
                         hand = self.card_name_gen(ages, self.draftable_cards[i])
                         
@@ -486,6 +556,7 @@ class BloodRage(BoardGame):
                     self.drafted_cards.clear()
                     self.draftable_cards = []
                     self.final_hand_str.clear()
+                    self.draft_phase = False
 
                     for i in range(len(self.player_list)):
                         self.drafted_cards.append(-1)

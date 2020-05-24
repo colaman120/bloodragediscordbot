@@ -2,6 +2,7 @@ class BoardGame:
     def __init__(self, set_id):
         self.game_id = set_id
         self.player_list = []
+        self.game_over = False
 
     def get_game_id(self):
         return self.game_id

@@ -166,7 +166,8 @@ async def get_hand(ctx):
         if hand == '':
             await ctx.send('Empty hand')
         else:
-            await ctx.send(hand)
+            for i in range(len(hand)):
+                await ctx.send(hand[i])
 
 
 @bot.command(name='card', help='View a specific card (Parameters: Age, Card)')
@@ -229,12 +230,16 @@ async def start_age(ctx, age: int):
     hands = current_game.start_age(age)
     if hands == None:
         await ctx.send('Discard to 1 card in hand')
+    elif hands == -1:
+        await ctx.send('Currently drafting')
     elif len(hands) == 0:
         await ctx.send('Not enough players')
     else:
         player_list = current_game.get_player_list()
         for i in range(len(hands)):
-            await player_list[i].get_player_object().send(hands[i])
+            await player_list[i].get_player_object().send('Cards to Draft:')
+            for j in range(len(hands[i])):
+                await player_list[i].get_player_object().send(hands[i][j])
 
 
 @bot.command(name='draft', help='Draft a card from the given hand (Blood Rage Specific)')
@@ -253,14 +258,15 @@ async def draft_from_dm(ctx, c_num: int):
     else:
         player_list = current_game.get_player_list()
         for i in range(len(player_list)):
-            await player_list[i].get_player_object().send(final_hands[i])
+            for j in range(len(final_hands[i])):
+                await player_list[i].get_player_object().send(final_hands[i][j])
 
 @bot.command(name='set_upgrade', help='Set upgrade cards in your clan data (Blood Rage Specific)')
-async def set_upgrade(ctx, card: int, slot: int):
+async def set_upgrade(ctx, age: int, card: int, slot: int):
     if current_game == None:
         await ctx.send('Current game not Blood Rage')
     elif current_game.game_id == 'br':
-        result = current_game.set_upgrades(card, slot, ctx.message.author.name, ctx.message.author.discriminator)
+        result = current_game.set_upgrades(age, card, slot, ctx.message.author)
 
         if result == 0:
             await ctx.send('Player not found')
@@ -283,29 +289,16 @@ async def view_upgrades(ctx):
     if current_game == None:
         await ctx.send('Current game not Blood Rage')
     elif current_game.game_id == 'br':
-        upgrades = current_game.get_upgrades(ctx.message.author.name, ctx.message.author.discriminator)
+        upgrades = current_game.get_upgrades(ctx.message.author)
         if upgrades == None:
             await ctx.send('Player not found')
 
         clan = ', '.join(filter(None, (str(upgrades[0][0]), str(upgrades[0][1]), str(upgrades[0][2]))))
         monster = ', '.join(filter(None, (str(upgrades[1][0]), str(upgrades[1][1]))))
-        leader = None
-        ship = None
-        warrior = None
-        if upgrades[2] == None:
-            leader = 'None'
-        else:
-            leader = upgrades[2]
+        leader = upgrades[2]
+        ship = upgrades[3]
+        warrior = upgrades[4]
 
-        if upgrades[3] == None:
-            ship = 'None'
-        else:
-            ship = upgrades[3]
-
-        if upgrades[4] == None:
-            warrior = 'None'
-        else:
-            warrior = upgrades[4]
 
         await ctx.send('Clan Upgrades: ' + clan)
         await ctx.send('Monster Upgrades: ' + monster)
