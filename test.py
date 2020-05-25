@@ -1,30 +1,17 @@
-import pandas
-import numpy as np
+from blood_rage import BloodRage
 
-card_counts = np.array([[22, 28, 36, 44],
-                        [21, 27, 35, 43],
-                        [21, 27, 35, 43]])
-'''
-age1_cards = pandas.read_csv('data/age_1.csv', index_col='Card #')
-age2_cards = pandas.read_csv('data/age_2.csv', index_col='Card #')
-age3_cards = pandas.read_csv('data/age_3.csv', index_col='Card #')
+x = [(7, 1), (8, 1), (9, 1), (6, 1), (0, 1), (1, 1), (2, 1)]
 
-print(age1_cards.at['Troll', 'Card Type'])
-
-
-card_counts = np.asarray(card_counts)
-print(card_counts)
-card_counts = card_counts.tolist()
-print(card_counts)
-
-list_example = []
-
-list_example.append([3, 4])
-list_example.append(5)
-
-
-print(list_example)
-'''
-
-x = []
-print(len(x))
+game = BloodRage()
+game.add_player('p1')
+game.player_list[0].set_hand(x)
+game.set_upgrades(1, 7, 1, 'p1')
+game.set_upgrades(1, 8, 2, 'p1')
+game.set_upgrades(1, 9, 3, 'p1')
+game.set_upgrades(1, 6, 1, 'p1')
+game.set_upgrades(1, 0, 1, 'p1')
+game.set_upgrades(1, 1, 2, 'p1')
+print(game.get_upgrades('p1'))
+game.set_upgrades(1, 2, 1, 'p1')
+print(game.get_upgrades('p1'))
+#print(game.get_current_hand('p1'))

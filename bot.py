@@ -293,8 +293,8 @@ async def view_upgrades(ctx):
         if upgrades == None:
             await ctx.send('Player not found')
 
-        clan = ', '.join(filter(None, (str(upgrades[0][0]), str(upgrades[0][1]), str(upgrades[0][2]))))
-        monster = ', '.join(filter(None, (str(upgrades[1][0]), str(upgrades[1][1]))))
+        clan = ', '.join(filter(None, (upgrades[0][0], upgrades[0][1], upgrades[0][2])))
+        monster = ', '.join(filter(None, (upgrades[1][0], upgrades[1][1])))
         leader = upgrades[2]
         ship = upgrades[3]
         warrior = upgrades[4]

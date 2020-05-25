@@ -245,7 +245,7 @@ class BloodRage(BoardGame):
             hand_ages = np.zeros(len(current_hand), dtype=np.int32)
             for i in range(len(current_hand)):
                 hand_num.append(current_hand[i][0])
-                hand_name.append(self.card_name_gen(current_hand[i][1], current_hand[i][0]))
+                hand_name.append(self.card_name_gen(current_hand[i][1], current_hand[i][0])[0])
                 hand_ages[i] = current_hand[i][1]
 
             return self.num_card_concatenator(np.array(hand_num), hand_name, hand_ages)
@@ -309,37 +309,38 @@ class BloodRage(BoardGame):
             if clan_cards[i] == (0, 0):
                 temp.append('None')
             else:
-                temp.append(self.num_card_concatenator(np.array([clan_cards[i][0]]), 
-                    self.card_name_gen(clan_cards[i][1], clan_cards[i][0]), np.array([clan_cards[i][1]])))
-        to_return.append(temp)
+                x = self.num_card_concatenator(np.array([clan_cards[i][0]]), 
+                    self.card_name_gen(clan_cards[i][1], clan_cards[i][0]), np.array([clan_cards[i][1]]))
+                temp.append(x[0])
+        to_return.append(copy.deepcopy(temp))
 
         temp.clear()
         for i in range(len(monster_cards)):
-            if clan_cards[i] == (0, 0):
+            if monster_cards[i] == (0, 0):
                 temp.append('None')
             else:
                 temp.append(self.num_card_concatenator(np.array([monster_cards[i][0]]), 
                     self.card_name_gen(monster_cards[i][1], monster_cards[i][0]), 
-                    np.array([monster_cards[i][1]])))
+                    np.array([monster_cards[i][1]]))[0])
         to_return.append(temp)
 
         if leader_card == (0, 0):
             to_return.append('None')
         else:
             to_return.append(self.num_card_concatenator(np.array([leader_card[0]]),
-                self.card_name_gen(leader_card[1], leader_card[0]), np.array([leader_card[1]])))
+                self.card_name_gen(leader_card[1], leader_card[0]), np.array([leader_card[1]]))[0])
 
         if ship_card == (0, 0):
             to_return.append('None')
         else:
             to_return.append(self.num_card_concatenator(np.array([ship_card[0]]),
-                self.card_name_gen(ship_card[1], ship_card[0]), np.array([ship_card[1]])))
+                self.card_name_gen(ship_card[1], ship_card[0]), np.array([ship_card[1]]))[0])
         
         if warrior_card == (0, 0):
             to_return.append('None')
         else:
             to_return.append(self.num_card_concatenator(np.array([warrior_card[0]]),
-                self.card_name_gen(warrior_card[1], warrior_card[0]), np.array([warrior_card[1]])))
+                self.card_name_gen(warrior_card[1], warrior_card[0]), np.array([warrior_card[1]]))[0])
 
         return to_return
     
@@ -412,11 +413,11 @@ class BloodRage(BoardGame):
         to_return = []
         if type(card_num) == int:
             if ages == 1:
-                return self.age1_cards.at[card_num, 'Name']
+                to_return.append(self.age1_cards.at[card_num, 'Name'])
             elif ages == 2:
-                return self.age2_cards.at[card_num, 'Name']
+                to_return.append(self.age2_cards.at[card_num, 'Name'])
             elif ages == 3:
-                return self.age3_cards.at[card_num, 'Name']
+                to_return.append(self.age3_cards.at[card_num, 'Name'])
 
         else:
             for i in range(len(card_num)):
