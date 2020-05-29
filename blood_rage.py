@@ -3,24 +3,61 @@ import random
 import numpy as np
 import pandas
 import copy
-from game import *
+import enum
+from game import BoardGame
+from game import Player
+from BRPiece import BRPiece
+from province import Province
 
 class BloodRage(BoardGame):
-    #class BoardState:
+    ####################################################################
+    #                    ______________________                        #
+    #                   |                     |                        #
+    #-------------------| Board State Class   |------------------------#
+    #                   |_____________________|                        #
+    #                                                                  #
+    ####################################################################
+    class BoardState:
+        def __init__(self):
+            self.provinces = []
+            self.provinces.append(Province('myrkulor', 3, ['manheim']))
+            self.provinces.append(Province('elvagar', 4, ['manheim']))
+            self.provinces.append(Province('angerboda', 5, ['manheim']))
+            self.provinces.append(Province('anolang', 3, ['alfheim']))
+            self.provinces.append(Province('gimle', 5, ['alfheim']))
+            self.provinces.append(Province('utgard', 3, ['jotunheim']))
+            self.provinces.append(Province('horgr', 4, ['jotunheim']))
+            self.provinces.append(Province('muspelheim', 5, ['jotunheim']))
+            self.provinces.append(Province('yggdrasil', 80, ['yggdrasil']))
+            self.provinces.append(Province('ne', 5, ['manheim']))
+            self.provinces.append(Province('nw', 5, ['manheim', 'alfheim']))
+            self.provinces.append(Province('sw', 5, ['alfheim', 'jotunheim']))
+            self.provinces.append(Province('se', 5, ['jotunheim']))
 
+            self.valhalla = []
 
-####################################################################
-#                    ______________________                        #
-#                   |                     |                        #
-#-------------------| BR Player Specific  |------------------------#
-#                   |_____________________|                        #
-#                                                                  #
-####################################################################
+        def get_provinces(self):
+            return self.provinces
+
+        def get_valhalla(self):
+            return self.valhalla
+
+        def summon(self, province_idx, piece):
+            self.provinces[province_idx].piece_list.append(piece)
+
+    ####################################################################
+    #                    ______________________                        #
+    #                   |                     |                        #
+    #-------------------| BR Player Specific  |------------------------#
+    #                   |_____________________|                        #
+    #                                                                  #
+    ####################################################################
     class BRPlayer(Player):
         #constructor for the player class
         def __init__(self, set_player):            
             super().__init__(set_player)
 
+            self.current_rage = 6
             self.rage = 6
             self.axes = 3
             self.horns = 4
@@ -32,6 +69,14 @@ class BloodRage(BoardGame):
             self.glory = 0
             self.hand = []
             self.quests = []
+            self.units = []
+
+            for i in range(8):
+                new_unit = BRPiece(set_player, 'warrior')
+                self.units.append(new_unit)
+
+            self.units.append(BRPiece(set_player, 'ship'))
+            self.units.append(BRPiece(set_player, 'leader'))
 
         #gets the discord player object of the blood rage player
         def get_player_object(self):
@@ -148,6 +193,18 @@ class BloodRage(BoardGame):
                     return 0
             return 1
 
+        def get_quests(self):
+            return self.quests
+        
+        def get_units(self):
+            return self.units
+
+        def get_current_rage(self):
+            return self.current_rage
+
+        def change_current_rage(self, delta):
+            self.current_rage += delta
+
 
 ####################################################################
 #                    ______________________                        #
@@ -160,6 +217,7 @@ class BloodRage(BoardGame):
     def __init__(self):
         super().__init__('br')
         self.current_age = 0
+        self.board = self.BoardState()
         self.draftable_cards = []
         self.drafted_cards = []
         self.final_hand_str = []
@@ -266,18 +324,23 @@ class BloodRage(BoardGame):
             return 1
 
         card_type = ''
+        card_name = ''
 
         if age == 1:
             card_type = self.age1_cards.at[card, 'Card Type']
+            card_name = self.age1_cards.at[card, 'Name']
         elif age == 2:
             card_type = self.age2_cards.at[card, 'Card Type']
+            card_name = self.age2_cards.at[card, 'Name']
         elif age == 3:
             card_type = self.age3_cards.at[card, 'Card Type']
+            card_name = self.age3_cards.at[card, 'Name']
         else:
             return 2
 
         if card_type == 'Monster':
             self.player_list[index].add_monster_uc(card, age, slot)
+            self.player_list[index].units.append(BRPiece(player, card_name.lower()))
         elif card_type == 'Leader':
             self.player_list[index].add_leader_uc(card, age)
         elif card_type == 'Warrior':
@@ -343,6 +406,130 @@ class BloodRage(BoardGame):
                 self.card_name_gen(warrior_card[1], warrior_card[0]), np.array([warrior_card[1]]))[0])
 
         return to_return
+
+    def summon_unit(self, player, unit, province):
+        found, index = self.find_player(player)
+        if found == False:
+            return 0
+
+        unit = unit.lower()
+        province = province.lower()
+
+        units_on_board = 0
+        for i in self.player_list[index].get_units():
+            if i.get_on_board() == True:
+                units_on_board += 1
+
+        if units_on_board >= self.player_list[index].get_horns():
+            return 1
+
+        unit_found = False
+        piece_idx = -1
+        player_units = self.player_list[index].get_units()
+        for i in range(len(player_units)):
+            if player_units[i].get_on_board() == False and player_units[i].get_name() == unit:
+                piece_idx = i
+                unit_found = True
+                break
+        
+        if !unit_found:
+            return 2
+
+        found, province_idx = self.find_province(province)
+        if self.board.get_provinces()[province_idx].get_current_cap() == self.board.get_provinces()[province_idx].get_cap():
+            return 3
+
+        if (unit == 'ship' or unit == 'sea serpeant') and province_idx < 9:
+            return 5
+        
+        if (unit != 'ship' and unit != 'sea serpent') and province_idx > 8:
+            return 5
+
+        self.board.summon(province_idx, player_units[piece_idx])
+        return 4
+
+    def kill(self, player, unit, province):
+        player_found, index = self.find_player(player)
+        if !player_found:
+            return 2
+        
+        unit = unit.lower()
+        province = province.lower()
+        
+        found, province_idx = self.find_province(province)
+        if !found:
+            return 3
+
+        unit_idx = -1
+        piece_list = self.board.get_provinces()[province_idx].get_piece_list()
+        for i in range(len(piece_list)):
+            if piece_list[i].get_name() == unit and piece_list[i].get_owner() == player:
+                unit_idx = i
+        
+        if unit_idx == -1:
+            return 0
+        else:
+            piece_list[unit_idx].kill()
+            dead_piece = self.board.provinces[province_idx].piece_list.pop(unit_idx)
+            self.board.valhalla.append(dead_piece)
+            return 1
+
+    def move(self, player, unit, num, province_from, province_to):
+        unit = unit.lower()
+        province_from = province_from.lower()
+        province_to = province_to.lower()
+
+        player_found, index = self.find_player(player)
+        if !player_found:
+            return 0
+
+        if self.player_list[index].get_current_rage() < 1:
+            return 1
+        
+        pf_found, pf_idx = self.find_province(province_from)
+        if !pf_found:
+            return 2
+
+        pt_found, pt_idx = self.find_province(province_to)
+        if !pt_found:
+            return 2
+
+        if pf_idx > 8 or pt_idx > 8:
+            return 3
+        
+        if unit == 'ship' or unit == 'sea serpent':
+            return 4
+
+        if self.board.get_provinces()[pt_idx].get_cap() - self.board.get_provinces()[pt_idx].get_current_cap() < num:
+            return 5
+        
+        unit_count = 0
+        piece_list = self.board.get_provinces()[pf_idx].get_piece_list()
+        for i in range(len(piece_list)):
+            if piece_list[i].get_owner() == player and unit = piece_list[i].get_name():
+                unit_count += 1
+
+        if unit_count < num:
+            return 6
+
+        count = 0
+        for i in range(len(piece_list)):
+            if piece_list[i].get_owner() == player and unit = piece_list[i].get_name():
+                self.board.get_provinces()[pt_idx].piece_list.append(self.board.get_provinces()[pf_idx].piece_list.pop(i))
+                count += 1
+            
+            if count == num:
+                break
+        return 7
+
+
+
+    def remove_card(self, card, age, player):
+        found, index = self.find_player(player)
+        if found:
+            return self.player_list[index].remove_card(card, age)
+        else: 
+            return 2
     
     #returns whether or not a player was found and at what index they were found
     def find_player(self, player_to_find):
@@ -354,13 +541,16 @@ class BloodRage(BoardGame):
                 return True, index
         return False, index
 
-    def remove_card(self, card, age, player):
-        found, index = self.find_player(player)
-        if found:
-            return self.player_list[index].remove_card(card, age)
-        else: 
-            return 2
-    
+    def find_province(self, province_to_find):
+        index = -1 
+        provinces = self.board.get_provinces()
+        for i in range(len(provinces)):
+            if provinces[i].get_name() == province_to_find:
+                index = i
+                return True, index 
+        
+        return False, index
+
     #generates hands
     def gen_hands(self, age):
         numbers = np.arange(self.card_counts[age - 1][len(self.player_list) - 2])

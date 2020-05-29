@@ -16,3 +16,12 @@ class Player:
 
     def get_player_object(self):
         return self.player_object
+
+class Piece:
+    def __init__(self, owner):
+        self.player = owner
+
+    def get_owner(self): 
+        return self.player
+
+    

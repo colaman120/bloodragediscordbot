@@ -23,6 +23,11 @@ current_game = None
 async def on_ready():
     print(f'{bot.user.name} has connected to Discord!')
 
+'''
+@bot.command(name='test')
+async def test(ctx, arg):
+    await ctx.send(arg)
+'''
 #shows the current selected game
 @bot.command(name='show_game', help='Displays the current game')
 async def show_game(ctx):
@@ -203,6 +208,77 @@ async def remove_card(ctx, age: int, card: int):
             await ctx.send('Player not found')
     else:
         await ctx.send('No implementation for game yet')
+
+@bot.command(name='summon')
+async def summon(ctx, unit, province):
+    if current_game == None:
+        await ctx.send('No game selected')
+    elif current_game.game_id == 'br':
+        result = current_game.summon_unit(ctx.message.author, unit, province)
+        if result == 0:
+            await ctx.send('Player not found')
+        elif result == 1:
+            await ctx.send('Not enough horns')
+        elif result == 2:
+            await ctx.send('No pieces left to summon')
+        elif result == 3:
+            await ctx.send('Province full')
+        elif result == 4:
+            await ctx.send(unit + 'unit summoned in' + province)
+        else:
+            await ctx.send('Trying to put ship on land or vice versa')
+    else:
+        await ctx.send('No implementation for game yet')
+
+@bot.command(name='kill')
+async def kill(ctx, unit, province):
+    if current_game == None:
+        await ctx.send('No game selected')
+    elif current_game.game_id == 'br':
+        result = current_game.kill(ctx.message.author, unit, province)
+        if result == 0:
+            await ctx.send('Unit not found')
+        elif result == 1:
+            await ctx.send(unit + ' killed from '+ province)
+        elif result == 2:
+            await ctx.send('Player not found')
+        else:
+            await ctx.send(province + ' not found')
+    else:
+        await ctx.send('No implementation for game yet')
+
+@bot.command(name='move')
+async def move(ctx, unit, num: int, province_from, province_to):
+    if current_game == None:
+        await ctx.send('No game selected')
+    elif current_game.game_id == 'br':
+        result = current_game.move(ctx.message.author, unit, num, province_from, province_to)
+        if result == 0:
+            await ctx.send('Player not found')
+        elif result == 1:
+            await ctx.send('Not enough rage')
+        elif result == 2:
+            await ctx.send('Province not found')
+        elif result == 3:
+            await ctx.send('Cannot move from/to fjords')
+        elif result == 4:
+            await ctx.send('Cannot move ships')
+        elif result == 5:
+            await ctx.send('Not enough space in destination')
+        elif result == 6:
+            await ctx.send('Not enough units in province')
+        else:
+            await ctx.send(unit + ' moved from ' + province_from + ' to ' + province_to)
+    else:
+        await ctx.send('No implementation for game yet')
+
+
+@bot.command(name='show_board_image')
+async def show_board(ctx):
+    if current_game == None:
+        await ctx.send('No game selected')
+    elif current_game.game_id == 'br':
+        await ctx.send(file=discord.File('data/BR_map.jpg'))
 
 ####################################################################
 #                    ______________________                        #
