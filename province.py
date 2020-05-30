@@ -5,6 +5,7 @@ class Province:
         self.subsection = set_subsec
         self.piece_list = []
         self.rag_status = False
+        self.pillage_reward = []
 
     def get_rag(self):
         return self.rag_status
@@ -21,8 +22,18 @@ class Province:
     def get_sub(self):
         return self.subsection
 
-    def ragnorok(self):
+    def set_ragnorok(self):
         self.rag_status = True
 
     def get_current_cap(self):
         return len(self.piece_list)
+
+    def get_pillage_reward(self):
+        return self.pillage_reward
+
+    # 0 = rage
+    # 1 = axes
+    # 2 = horns
+    # 3 = 5 glory
+    def set_pillage_reward(self, set_reward):
+        self.pillage_reward.append(set_reward)

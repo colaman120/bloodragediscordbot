@@ -93,3 +93,6 @@ class BRPiece(Piece):
 
     def set_strength(self, new_strength):
         self.strength = new_strength
+
+    def to_string(self):
+        return self.player + ': ' + self.name + ', ' + self.strength

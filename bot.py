@@ -218,19 +218,23 @@ async def summon(ctx, unit, province):
         if result == 0:
             await ctx.send('Player not found')
         elif result == 1:
-            await ctx.send('Not enough horns')
+            await ctx.send('Province not found')
         elif result == 2:
-            await ctx.send('No pieces left to summon')
+            await ctx.send('Province is ragnoroked')
         elif result == 3:
-            await ctx.send('Province full')
+            await ctx.send('Not enough horns')
         elif result == 4:
-            await ctx.send(unit + 'unit summoned in' + province)
+            await ctx.send('Unit not found')
+        elif result == 5:
+            await ctx.send('Province is full')
+        elif result == 6:
+            await ctx.send('Trying to summon ship on land or vice versa')
         else:
-            await ctx.send('Trying to put ship on land or vice versa')
+            await ctx.send(unit + ' summoned to ' + province)
     else:
         await ctx.send('No implementation for game yet')
 
-@bot.command(name='kill')
+@bot.command(name='kill_piece')
 async def kill(ctx, unit, province):
     if current_game == None:
         await ctx.send('No game selected')
@@ -274,11 +278,51 @@ async def move(ctx, unit, num: int, province_from, province_to):
 
 
 @bot.command(name='show_board_image')
-async def show_board(ctx):
+async def show_board_image(ctx):
     if current_game == None:
         await ctx.send('No game selected')
     elif current_game.game_id == 'br':
         await ctx.send(file=discord.File('data/BR_map.jpg'))
+
+@bot.command(name='show_board')
+async def show_board(ctx):
+    if current_game == None:
+        await ctx.send('No game selected')
+    elif current_game.game_id == 'br':
+        result = current_game.display_board()
+        for i in range(8):
+            await ctx.send('**Province:** ' + result[i][0] + ': ' + result[i][1])
+            await ctx.send('Ragnorok: ' + str(result[i][2]))
+            await ctx.send('Capacity: ' + str(result[i][3]))
+            await ctx.send('Reward: ' + result[i][4])
+            await ctx.send('Pieces: ')
+            if len(result[i][5]) == 0:
+                await ctx.send('Province empty')
+            else:
+                for j in result[i][5]:
+                    await ctx.send(result[i][5][j].to_string())
+
+        await ctx.send(result[8][0])
+        await ctx.send('Pieces: ')
+        if len(result[8][5]) == 0:
+            await ctx.send('Province empty')
+        else:
+            for j in result[i][5]:
+                await ctx.send(result[i][5][j].to_string())
+
+        
+        for i in range(9, 13):
+            await ctx.send('**Fjord**: ' + result[i][0])
+            await ctx.send('Pieces: ')
+            if len(result[i][5]) == 0:
+                await ctx.send('Province empty')
+            else:
+                for j in result[i][5]:
+                    await ctx.send(result[i][5][j].to_string())
+    else:
+        await ctx.send('No implementation for game yet')
+
+            
 
 ####################################################################
 #                    ______________________                        #

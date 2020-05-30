@@ -35,6 +35,18 @@ class BloodRage(BoardGame):
             self.provinces.append(Province('se', 5, ['jotunheim']))
 
             self.valhalla = []
+            self.provinces[8].set_pillage_reward(0)
+            self.provinces[8].set_pillage_reward(1)
+            self.provinces[8].set_pillage_reward(2)
+
+            x = [0, 0, 0, 1, 1, 2, 2, 3]
+            rewards = random.sample(x, 8)
+
+            for i in range(8):
+                self.provinces[i].set_pillage_reward(rewards[i])
+            
+            for i in range(9, 13):
+                self.provinces[i].set_pillage_reward(4)
 
         def get_provinces(self):
             return self.provinces
@@ -415,13 +427,20 @@ class BloodRage(BoardGame):
         unit = unit.lower()
         province = province.lower()
 
+        found, province_idx = self.find_province(province)
+        if found == False:
+            return 1
+
+        if self.board.get_provinces()[province_idx].get_rag() == True:
+            return 2
+
         units_on_board = 0
         for i in self.player_list[index].get_units():
             if i.get_on_board() == True:
                 units_on_board += 1
 
         if units_on_board >= self.player_list[index].get_horns():
-            return 1
+            return 3
 
         unit_found = False
         piece_idx = -1
@@ -432,32 +451,32 @@ class BloodRage(BoardGame):
                 unit_found = True
                 break
         
-        if !unit_found:
-            return 2
+        if unit_found == False:
+            return 4
 
-        found, province_idx = self.find_province(province)
+        
         if self.board.get_provinces()[province_idx].get_current_cap() == self.board.get_provinces()[province_idx].get_cap():
-            return 3
+            return 5
 
         if (unit == 'ship' or unit == 'sea serpeant') and province_idx < 9:
-            return 5
+            return 6
         
         if (unit != 'ship' and unit != 'sea serpent') and province_idx > 8:
-            return 5
+            return 6
 
         self.board.summon(province_idx, player_units[piece_idx])
-        return 4
+        return 7
 
     def kill(self, player, unit, province):
         player_found, index = self.find_player(player)
-        if !player_found:
+        if player_found == False:
             return 2
         
         unit = unit.lower()
         province = province.lower()
         
         found, province_idx = self.find_province(province)
-        if !found:
+        if found == False:
             return 3
 
         unit_idx = -1
@@ -468,11 +487,26 @@ class BloodRage(BoardGame):
         
         if unit_idx == -1:
             return 0
-        else:
-            piece_list[unit_idx].kill()
-            dead_piece = self.board.provinces[province_idx].piece_list.pop(unit_idx)
+
+
+        piece_list[unit_idx].kill()
+        dead_piece = self.board.provinces[province_idx].piece_list.pop(unit_idx)
+        self.board.valhalla.append(dead_piece)
+        return 1
+
+    def kill_all(self, province):
+        province = province.lower()
+        found, province_idx = self.find_province(province)
+        if found == False:
+            return 0
+
+        piece_list = self.board.get_provinces()[province_idx].get_piece_list()
+        for i in range(len(piece_list)):
+            piece_list[i].kill()
+            dead_piece = self.board.provinces[province_idx].piece_list.pop(i)
             self.board.valhalla.append(dead_piece)
-            return 1
+
+
 
     def move(self, player, unit, num, province_from, province_to):
         unit = unit.lower()
@@ -480,18 +514,18 @@ class BloodRage(BoardGame):
         province_to = province_to.lower()
 
         player_found, index = self.find_player(player)
-        if !player_found:
+        if player_found == False:
             return 0
 
         if self.player_list[index].get_current_rage() < 1:
             return 1
         
         pf_found, pf_idx = self.find_province(province_from)
-        if !pf_found:
+        if pf_found == False:
             return 2
 
         pt_found, pt_idx = self.find_province(province_to)
-        if !pt_found:
+        if pt_found == False:
             return 2
 
         if pf_idx > 8 or pt_idx > 8:
@@ -506,7 +540,7 @@ class BloodRage(BoardGame):
         unit_count = 0
         piece_list = self.board.get_provinces()[pf_idx].get_piece_list()
         for i in range(len(piece_list)):
-            if piece_list[i].get_owner() == player and unit = piece_list[i].get_name():
+            if piece_list[i].get_owner() == player and unit == piece_list[i].get_name():
                 unit_count += 1
 
         if unit_count < num:
@@ -514,7 +548,7 @@ class BloodRage(BoardGame):
 
         count = 0
         for i in range(len(piece_list)):
-            if piece_list[i].get_owner() == player and unit = piece_list[i].get_name():
+            if piece_list[i].get_owner() == player and unit == piece_list[i].get_name():
                 self.board.get_provinces()[pt_idx].piece_list.append(self.board.get_provinces()[pf_idx].piece_list.pop(i))
                 count += 1
             
@@ -522,14 +556,35 @@ class BloodRage(BoardGame):
                 break
         return 7
 
-
-
     def remove_card(self, card, age, player):
         found, index = self.find_player(player)
         if found:
             return self.player_list[index].remove_card(card, age)
         else: 
             return 2
+
+    def display_board(self):
+        to_return = []
+        province_list = self.board.get_provinces()
+        for i in range(len(province_list)):
+            province = []
+            province.append(province_list[i].get_name().capitalize())
+            province.append(province_list[i].get_sub()[0].capitalize())
+            province.append(province_list[i].get_rag())
+            province.append(province_list[i].get_cap())
+            print(province_list[i].get_pillage_reward())
+            if province_list[i].get_pillage_reward()[0] == 0:
+                province.append('Rage')
+            elif province_list[i].get_pillage_reward()[0] == 1:
+                province.append('Axes')
+            elif province_list[i].get_pillage_reward()[0] == 2:
+                province.append('Horns')
+            else:
+                province.append('5 Glory')
+            province.append(province_list[i].get_piece_list())
+            to_return.append(province)
+        
+        return to_return
     
     #returns whether or not a player was found and at what index they were found
     def find_player(self, player_to_find):
@@ -680,6 +735,18 @@ class BloodRage(BoardGame):
             self.draftable_cards = self.draftable_cards.tolist()
             return False
 
+    def ragnorok(self, num):
+        x = []
+        for i in range(len(self.board.provinces)):
+            if len(self.board.provinces[i].get_name()) > 3 and self.board.provinces[i].get_rag() == False:
+                x.append(i)
+
+        rag = random.sample(x, num)
+
+        for i in range(len(rag)):
+            self.kill_all(self.board.provinces[i])
+            self.board.provinces[i].set_ragnorok()
+
     #provides the initial hands per age
     def start_age(self, age):
         if self.draft_phase != False:
@@ -688,6 +755,9 @@ class BloodRage(BoardGame):
         for i in range(len(self.player_list)):
             if len(self.player_list[i].get_hand()) > 1:
                 return None
+
+        if age == 1:
+            self.ragnorok(5 - len(self.player_list))
 
         self.draft_phase = True
         if len(self.player_list) >= 2:
