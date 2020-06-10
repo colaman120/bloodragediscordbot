@@ -1,4 +1,5 @@
 from blood_rage import BloodRage
+import numpy as np
 
 '''
 x = [(7, 1), (8, 1), (9, 1), (6, 1), (0, 1), (1, 1), (2, 1)]
@@ -17,18 +18,26 @@ print(game.get_upgrades('p1'))
 #print(game.get_current_hand('p1'))
 '''
 
-""" game = BloodRage()
-game.add_player('p1')
-game.add_player('p2')
-game.summon_unit('p1', 'leader', 'anolang')
-game.summon_unit('p1', 'ship', 'anolang')
-game.summon_unit('p1', 'warrior', 'anolang')
-#print(game.board.get_provinces()[3].get_piece_list())
-#for i in range(len(game.board.get_provinces()[3].get_piece_list())):
-#   print(game.board.get_provinces()[3].get_piece_list()[i].get_name())
-for i in range(len(game.board.get_provinces())):
-    print(game.board.get_provinces()[i].get_pillage_reward()) """
+# game = BloodRage()
+# game.add_player('p1')
+# game.add_player('p2')
+# game.summon_unit('p1', 'leader', 'anolang')
+# game.summon_unit('p1', 'warrior', 'anolang')
+# game.summon_unit('p1', 'warrior', 'anolang')
+# game.summon_unit('p1', 'warrior', 'myrkulor')
+# result = game.summon_unit('p1', 'warrior', 'myrkulor')
+# print(result)
+# #print(game.board.get_provinces()[3].get_piece_list())
+# print('Anolang')
+# for i in range(len(game.board.get_provinces()[3].get_piece_list())):
+#    print(game.board.get_provinces()[3].get_piece_list()[i].get_name())
 
-game = BloodRage()
-print(game.board.provinces[11].get_sub())
-print(game.board.provinces[12].get_sub())
+# print('Myrkulor')
+# for i in range(len(game.board.get_provinces()[0].get_piece_list())):
+#    print(game.board.get_provinces()[0].get_piece_list()[i].get_name())
+
+x = '2*'
+bad_chars = [';', ':', '!', "*"] 
+for i in bad_chars : 
+    x = x.replace(i, '') 
+print(int(x))

@@ -95,4 +95,4 @@ class BRPiece(Piece):
         self.strength = new_strength
 
     def to_string(self):
-        return self.player + ': ' + self.name + ', ' + self.strength
+        return self.player.display_name + ': ' + self.name.capitalize() + ', ' + str(self.strength)

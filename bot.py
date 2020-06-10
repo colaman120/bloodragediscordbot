@@ -23,11 +23,6 @@ current_game = None
 async def on_ready():
     print(f'{bot.user.name} has connected to Discord!')
 
-'''
-@bot.command(name='test')
-async def test(ctx, arg):
-    await ctx.send(arg)
-'''
 #shows the current selected game
 @bot.command(name='show_game', help='Displays the current game')
 async def show_game(ctx):
@@ -132,13 +127,24 @@ async def add_stats(ctx, stat, add: int):
                 current_game.player_list[index].change_axes(add)
             elif stat == 'horns':
                 current_game.player_list[index].change_horns(add)
+            else:
+                await ctx.send('Stats added')
+            
+        found, index = current_game.find_player(ctx.message.author)
 
-            await ctx.send('Stats added')
+        if found:
+            rage = current_game.get_player_list()[index].get_rage()
+            axes = current_game.get_player_list()[index].get_axes()
+            horns = current_game.get_player_list()[index].get_horns()
+
+            await ctx.send('Rage: ' + str(rage))
+            await ctx.send('Axes: ' + str(axes))
+            await ctx.send('Horns: ' + str(horns))
+
         else:
             await ctx.send('Player not found')
     else:
         await ctx.send('Stat not found')
-
 
 @bot.command(name='get_stats', help='Shows your clan stats')
 async def get_stats(ctx):
@@ -174,7 +180,6 @@ async def get_hand(ctx):
             for i in range(len(hand)):
                 await ctx.send(hand[i])
 
-
 @bot.command(name='card', help='View a specific card (Parameters: Age, Card)')
 async def get_card(ctx, age: int, card: int):
     global current_game
@@ -192,7 +197,6 @@ async def get_card(ctx, age: int, card: int):
             await ctx.send('Description: ' + result[3])
     else:
         await ctx.send('No implementation for current game')
-
 
 @bot.command(name='remove_card', help='Removes card from hand (Parameters: Age, Card)')
 async def remove_card(ctx, age: int, card: int):
@@ -230,7 +234,7 @@ async def summon(ctx, unit, province):
         elif result == 6:
             await ctx.send('Trying to summon ship on land or vice versa')
         else:
-            await ctx.send(unit + ' summoned to ' + province)
+            await ctx.send(unit.capitalize() + ' summoned to ' + province.capitalize())
     else:
         await ctx.send('No implementation for game yet')
 
@@ -276,13 +280,32 @@ async def move(ctx, unit, num: int, province_from, province_to):
     else:
         await ctx.send('No implementation for game yet')
 
-
 @bot.command(name='show_board_image')
 async def show_board_image(ctx):
     if current_game == None:
         await ctx.send('No game selected')
     elif current_game.game_id == 'br':
         await ctx.send(file=discord.File('data/BR_map.jpg'))
+
+@bot.command(name='show_province')
+async def show_province(ctx, province):
+    if current_game == None:
+        await ctx.send('No game selected')
+    elif current_game.game_id == 'br':
+        result = current_game.display_province(province)
+        if len(result[0]) == 2:
+            await ctx.send('**Province:** ' + province.capitalize() + ' (*' + result[0][0].capitalize() + ', ' + result[0][1].capitalize() + '*)')
+        else:
+            await ctx.send('**Province:** ' + province.capitalize() + ' (*' + result[0][0].capitalize() + '*)')
+        await ctx.send('Ragnorok: ' + str(result[1]))
+        await ctx.send('Capacity: ' + str(result[2]))
+        await ctx.send('Reward: ' + result[3])
+        await ctx.send('Pieces: ')
+        if len(result[4]) == 0:
+            await ctx.send('Province empty')
+        else:
+            for j in range(len(result[4])):
+                await ctx.send(result[4][j].to_string())
 
 @bot.command(name='show_board')
 async def show_board(ctx):
@@ -291,7 +314,7 @@ async def show_board(ctx):
     elif current_game.game_id == 'br':
         result = current_game.display_board()
         for i in range(8):
-            await ctx.send('**Province:** ' + result[i][0] + ': ' + result[i][1])
+            await ctx.send('**Province:** ' + result[i][0] + ' (*' + result[i][1] + '*)')
             await ctx.send('Ragnorok: ' + str(result[i][2]))
             await ctx.send('Capacity: ' + str(result[i][3]))
             await ctx.send('Reward: ' + result[i][4])
@@ -299,15 +322,15 @@ async def show_board(ctx):
             if len(result[i][5]) == 0:
                 await ctx.send('Province empty')
             else:
-                for j in result[i][5]:
+                for j in range(len(result[i][5])):
                     await ctx.send(result[i][5][j].to_string())
 
-        await ctx.send(result[8][0])
+        await ctx.send('**Province:** ' + result[8][0])
         await ctx.send('Pieces: ')
         if len(result[8][5]) == 0:
             await ctx.send('Province empty')
         else:
-            for j in result[i][5]:
+            for j in range(len(result[i][5])):
                 await ctx.send(result[i][5][j].to_string())
 
         
@@ -317,7 +340,7 @@ async def show_board(ctx):
             if len(result[i][5]) == 0:
                 await ctx.send('Province empty')
             else:
-                for j in result[i][5]:
+                for j in range(len(result[i][5])):
                     await ctx.send(result[i][5][j].to_string())
     else:
         await ctx.send('No implementation for game yet')
@@ -361,7 +384,6 @@ async def start_age(ctx, age: int):
             for j in range(len(hands[i])):
                 await player_list[i].get_player_object().send(hands[i][j])
 
-
 @bot.command(name='draft', help='Draft a card from the given hand (Blood Rage Specific)')
 async def draft_from_dm(ctx, c_num: int):
     global current_game
@@ -376,6 +398,7 @@ async def draft_from_dm(ctx, c_num: int):
     elif len(final_hands) == 0:
         await ctx.send('Card not in hand')
     else:
+        await ctx.send('Card Drafted')
         player_list = current_game.get_player_list()
         for i in range(len(player_list)):
             for j in range(len(final_hands[i])):
@@ -387,17 +410,19 @@ async def set_upgrade(ctx, age: int, card: int, slot: int):
         await ctx.send('Current game not Blood Rage')
     elif current_game.game_id == 'br':
         result = current_game.set_upgrades(age, card, slot, ctx.message.author)
+        card_name = current_game.card_name_gen(age, card)
+        print(card_name)
 
         if result == 0:
             await ctx.send('Player not found')
         elif result == 1:
-            await ctx.send('Card not in hand')
+            await ctx.send(card_name + ' not in hand')
         elif  result == 2:
-            await ctx.send('Card could not be found')
+            await ctx.send(card_name + ' could not be found')
         elif result == 3:
-            await ctx.send('Upgrade card could not be set')
+            await ctx.send(card_name + ' could not be set')
         else:
-            await ctx.send('Upgrade Card set')
+            await ctx.send(card_name + ' set in slot ' + slot)
 
     else:
         await ctx.send('Not Blood Rage, command unused')
@@ -428,7 +453,38 @@ async def view_upgrades(ctx):
     else:
         await ctx.send('Not Blood Rage, command unused')
 
+@bot.command(name='rag_check')
+async def rag_check(ctx):
+    if current_game.get_game_id() == 'br':
+        result = current_game.rag_check()
+        province_list = current_game.board.get_provinces()
+        await ctx.send('Provinces getting ragnoroked: ' + province_list[result[0]].get_name().capitalize() 
+            + ', ' + province_list[result[1]].get_name().capitalize() + ', '
+            + province_list[result[2]].get_name().capitalize())
+            
+@bot.command(name='pillage_rewards')
+async def show_pillage_rewards(ctx):
+    if current_game.get_game_id() == 'br':
+        result = current_game.pillage_rewards()
+        for i in range(len(result)):
+            await ctx.send('**' + current_game.board.get_provinces()[i].get_name().capitalize() + ':** ' + result[i])
 
+@bot.command(name='valhalla')
+async def show_valhalla(ctx):
+    if current_game.get_game_id() == 'br':
+        result = current_game.show_valhalla()
+        for i in range(len(result)):
+            await ctx.send('**' + result[i].get_name() + '**: ' + result[i].get_owner())
+
+@bot.command(name='add_rage')
+async def change_rage(ctx, delta: int):
+    if current_game.get_game_id() == 'br':
+        result = current_game.change_rage(delta, ctx.message.author)
+        if result:
+            found, index = current_game.find_player(ctx.message.author)
+            await ctx.send(delta + ' added to current rage. You have ' + current_game.get_player_list()[index].get_current_rage() + ' rage left.')
+        else:
+            await ctx.send('Player not found')
 
 ####################################################################
 #                    _____________________                         #
@@ -451,7 +507,5 @@ async def kill_server(ctx):
 async def kill_error(ctx, error):
     if isinstance(error, commands.CheckFailure):
         await ctx.send('You do not have permission to access this command')
-
-
 
 bot.run(TOKEN)

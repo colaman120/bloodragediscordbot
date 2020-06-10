@@ -337,16 +337,20 @@ class BloodRage(BoardGame):
 
         card_type = ''
         card_name = ''
+        card_cost = ''
 
         if age == 1:
             card_type = self.age1_cards.at[card, 'Card Type']
             card_name = self.age1_cards.at[card, 'Name']
+            card_cost = self.age1_cards.at[card, 'Rage']
         elif age == 2:
             card_type = self.age2_cards.at[card, 'Card Type']
             card_name = self.age2_cards.at[card, 'Name']
+            card_cost = self.age2_cards.at[card, 'Rage']
         elif age == 3:
             card_type = self.age3_cards.at[card, 'Card Type']
             card_name = self.age3_cards.at[card, 'Name']
+            card_cost = self.age3_cards.at[card, 'Rage']
         else:
             return 2
 
@@ -363,6 +367,19 @@ class BloodRage(BoardGame):
             self.player_list[index].add_clan_uc(card, age, slot)
         else:
             return 3
+        
+        bad_chars = [';', ':', '!', "*"] 
+        for i in bad_chars: 
+            card_cost = card_cost.replace(i, '')
+        
+        card_cost = int(card_cost)
+        
+        player_upgrades = self.player_list[index].get_clan_uc()
+        for i in player_upgrades:
+            if i == (8, 1):
+                card_cost -= 1
+        
+        self.player_list[index].change_current_rage(card_cost * -1)
 
         self.remove_card(card, age, player)
         return 4
@@ -465,6 +482,7 @@ class BloodRage(BoardGame):
             return 6
 
         self.board.summon(province_idx, player_units[piece_idx])
+        self.player_list[index].units[piece_idx].set_on_board()
         return 7
 
     def kill(self, player, unit, province):
@@ -505,8 +523,6 @@ class BloodRage(BoardGame):
             piece_list[i].kill()
             dead_piece = self.board.provinces[province_idx].piece_list.pop(i)
             self.board.valhalla.append(dead_piece)
-
-
 
     def move(self, player, unit, num, province_from, province_to):
         unit = unit.lower()
@@ -556,6 +572,15 @@ class BloodRage(BoardGame):
                 break
         return 7
 
+    def rag_check(self):
+        x = np.arange(8)
+        for i in range(8):
+            if self.board.get_provinces()[i].get_rag():
+                x = np.delete(x, i)
+        
+        result = np.random.choice(x, 3, replace=False)
+        return result
+
     def remove_card(self, card, age, player):
         found, index = self.find_player(player)
         if found:
@@ -572,7 +597,6 @@ class BloodRage(BoardGame):
             province.append(province_list[i].get_sub()[0].capitalize())
             province.append(province_list[i].get_rag())
             province.append(province_list[i].get_cap())
-            print(province_list[i].get_pillage_reward())
             if province_list[i].get_pillage_reward()[0] == 0:
                 province.append('Rage')
             elif province_list[i].get_pillage_reward()[0] == 1:
@@ -585,7 +609,53 @@ class BloodRage(BoardGame):
             to_return.append(province)
         
         return to_return
+
+    def display_province(self, province):
+        to_return = []
+        found, province_idx = self.find_province(province.lower())
+        temp_prov = self.board.get_provinces()[province_idx]
+        if found:
+            to_return.append(temp_prov.get_sub())
+            to_return.append(temp_prov.get_rag())
+            to_return.append(temp_prov.get_cap())
+            if province_idx > 8:
+                to_return.append('None')
+            elif temp_prov.get_pillage_reward()[0] == 0:
+                to_return.append('Rage')
+            elif temp_prov.get_pillage_reward()[0] == 1:
+                to_return.append('Axes')
+            elif temp_prov.get_pillage_reward()[0] == 2:
+                to_return.append('Horns')
+            else:
+                to_return.append('5 Glory')
+            to_return.append(temp_prov.get_piece_list())
+        return to_return
+
+    def pillage_rewards(self):
+        to_return = []
+        for i in range(8):
+            if self.board.get_provinces()[i].get_rag():
+                to_return.append('Ragnoroked')
+            elif self.board.get_provinces()[i].get_pillage_reward()[0] == 0:
+                to_return.append('Rage')
+            elif self.board.get_provinces()[i].get_pillage_reward()[0] == 1:
+                to_return.append('Axes')
+            elif self.board.get_provinces()[i].get_pillage_reward()[0] == 2:
+                to_return.append('Horns')
+            else:
+                to_return.append('5 Glory')
+        return to_return
+
+    def show_valhalla(self):
+        return self.board.get_valhalla()
     
+    def change_rage(self, delta, player):
+        found, index = self.find_player(player)
+        if found:
+            self.player_list[index].change_current_rage(delta)
+            return True
+        return False
+        
     #returns whether or not a player was found and at what index they were found
     def find_player(self, player_to_find):
         index = -1
@@ -651,7 +721,6 @@ class BloodRage(BoardGame):
             card_type = 0
 
         return card_type
-
 
     #generates the names of the cards based on the number and age
     def card_name_gen(self, ages, card_num):
@@ -744,7 +813,7 @@ class BloodRage(BoardGame):
         rag = random.sample(x, num)
 
         for i in range(len(rag)):
-            self.kill_all(self.board.provinces[i])
+            self.kill_all(self.board.provinces[i].get_name())
             self.board.provinces[i].set_ragnorok()
 
     #provides the initial hands per age
@@ -759,8 +828,8 @@ class BloodRage(BoardGame):
         if age == 1:
             self.ragnorok(5 - len(self.player_list))
 
-        self.draft_phase = True
         if len(self.player_list) >= 2:
+            self.draft_phase = True
             self.draftable_cards = copy.deepcopy(self.gen_hands(age))
             self.current_age = copy.copy(age)
             generated_hands = []

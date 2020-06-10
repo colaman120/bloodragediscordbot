@@ -2,7 +2,9 @@ class Province:
     def __init__(self, set_name, set_cap, set_subsec):
         self.name = set_name
         self.capacity = set_cap
-        self.subsection = set_subsec
+        self.subsection = []
+        for i in set_subsec:
+            self.subsection.append(i)
         self.piece_list = []
         self.rag_status = False
         self.pillage_reward = []
