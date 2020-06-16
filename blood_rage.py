@@ -189,7 +189,7 @@ class BloodRage(BoardGame):
         def set_quest(self, new_quest, age):
             self.quests.append((new_quest, age))
 
-        def get_quest(self):
+        def get_quests(self):
             return self.quests
 
         def clear_quest(self, slot):
@@ -205,9 +205,6 @@ class BloodRage(BoardGame):
                     return 0
             return 1
 
-        def get_quests(self):
-            return self.quests
-        
         def get_units(self):
             return self.units
 
@@ -306,6 +303,7 @@ class BloodRage(BoardGame):
 
         return to_return
 
+    #returns the current hand of the player
     def get_current_hand(self, player):
         found, index = self.find_player(player)
         if found:
@@ -321,6 +319,8 @@ class BloodRage(BoardGame):
             return self.num_card_concatenator(np.array(hand_num), hand_name, hand_ages)
         return 'No hand found'
 
+    #takes a card that is input by the player and places it in the slot as designated by the player
+    #for leader, ship, and warrior cards, the slot parameter is unused
     def set_upgrades(self, age, card, slot, player):
         found, index = self.find_player(player)
         if found == False:
@@ -367,23 +367,27 @@ class BloodRage(BoardGame):
             self.player_list[index].add_clan_uc(card, age, slot)
         else:
             return 3
-        
-        bad_chars = [';', ':', '!', "*"] 
-        for i in bad_chars: 
-            card_cost = card_cost.replace(i, '')
-        
-        card_cost = int(card_cost)
-        
-        player_upgrades = self.player_list[index].get_clan_uc()
-        for i in player_upgrades:
-            if i == (8, 1):
-                card_cost -= 1
-        
-        self.player_list[index].change_current_rage(card_cost * -1)
+
+        print('Card name: ' + card_name)
+        if card_name != 'Dwarf Chieftain' and card_name != 'Soldier of Hel':
+            bad_chars = [';', ':', '!', "*"] 
+            for i in bad_chars: 
+                card_cost = card_cost.replace(i, '')
+            
+            card_cost = int(card_cost)
+            print('Card cost: ' + str(card_cost))
+            
+            player_upgrades = self.player_list[index].get_clan_uc()
+            for i in player_upgrades:
+                if i == (8, 1) and card_cost > 0:
+                    card_cost -= 1
+
+            self.player_list[index].change_current_rage(card_cost * -1)
 
         self.remove_card(card, age, player)
         return 4
 
+    #returns all upgrade cards that a player has in a format that is read by the bot
     def get_upgrades(self, player):
         found, index = self.find_player(player)
         if found == False:
@@ -436,6 +440,7 @@ class BloodRage(BoardGame):
 
         return to_return
 
+    #summons a unit onto self.board
     def summon_unit(self, player, unit, province):
         found, index = self.find_player(player)
         if found == False:
@@ -485,6 +490,7 @@ class BloodRage(BoardGame):
         self.player_list[index].units[piece_idx].set_on_board()
         return 7
 
+    #kills a unit specified by the player
     def kill(self, player, unit, province):
         player_found, index = self.find_player(player)
         if player_found == False:
@@ -512,6 +518,7 @@ class BloodRage(BoardGame):
         self.board.valhalla.append(dead_piece)
         return 1
 
+    #kills all units in a province
     def kill_all(self, province):
         province = province.lower()
         found, province_idx = self.find_province(province)
@@ -524,6 +531,7 @@ class BloodRage(BoardGame):
             dead_piece = self.board.provinces[province_idx].piece_list.pop(i)
             self.board.valhalla.append(dead_piece)
 
+    #allows players to move as many of one type of unit as they want from one province to another
     def move(self, player, unit, num, province_from, province_to):
         unit = unit.lower()
         province_from = province_from.lower()
@@ -572,6 +580,8 @@ class BloodRage(BoardGame):
                 break
         return 7
 
+    #performs a random num gen based on the provinces that have yet to be ragnoroked 
+    #based on the provinces that have already been ragnoroked due to the number of players
     def rag_check(self):
         x = np.arange(8)
         for i in range(8):
@@ -581,6 +591,7 @@ class BloodRage(BoardGame):
         result = np.random.choice(x, 3, replace=False)
         return result
 
+    #removes a card from ones hand
     def remove_card(self, card, age, player):
         found, index = self.find_player(player)
         if found:
@@ -588,6 +599,7 @@ class BloodRage(BoardGame):
         else: 
             return 2
 
+    #returns a board that is parsed and displayed by the bot
     def display_board(self):
         to_return = []
         province_list = self.board.get_provinces()
@@ -610,6 +622,7 @@ class BloodRage(BoardGame):
         
         return to_return
 
+    #returns a single province that is parsed and displayed by the bot
     def display_province(self, province):
         to_return = []
         found, province_idx = self.find_province(province.lower())
@@ -631,6 +644,7 @@ class BloodRage(BoardGame):
             to_return.append(temp_prov.get_piece_list())
         return to_return
 
+    #returns a list of the pillage rewards for each province
     def pillage_rewards(self):
         to_return = []
         for i in range(8):
@@ -646,16 +660,68 @@ class BloodRage(BoardGame):
                 to_return.append('5 Glory')
         return to_return
 
+    #returns a list of all units in valhalla
     def show_valhalla(self):
         return self.board.get_valhalla()
     
+    #allows a player to change their rage
     def change_rage(self, delta, player):
         found, index = self.find_player(player)
         if found:
             self.player_list[index].change_current_rage(delta)
             return True
         return False
-        
+
+    def get_current_rage(self, player):
+        found, index = self.find_player(player)
+        if found:
+            return self.player_list[index].get_current_rage()
+        else:
+            return -10
+
+    def get_quests(self, player):
+        found, index = self.find_player(player)
+        if found:
+            quest_list = self.player_list[index].get_quests()
+            to_return = []
+            for i in range(len(quest_list)):
+                to_return.append(self.card_name_gen(quest_list[i][1], quest_list[i][0])[0])
+            return to_return
+        else:
+            return -1
+
+    def add_quest(self, age, card, player):
+        found, index = self.find_player(player)
+        if found:
+            card_found = False
+            player_hand = self.player_list[index].get_hand()
+            for i in range(len(player_hand)):
+                if age == player_hand[i][1] and card == player_hand[i][0]:
+                    card_found = True
+                    break
+            
+            if card_found == False:
+                return 0
+            
+            player_quests = self.player_list[index].get_quests()
+            if len(player_quests) == 0:
+                self.player_list[index].set_quest(card, age)
+                return 2
+            else:
+                card_name = self.card_name_gen(age, card)[0]
+                quest_count = 0
+                for i in range(len(player_quests)):
+                    if self.card_name_gen(player_quests[i][1], player_quests[i][0])[0] == card_name:
+                        quest_count += 1
+                    
+                    if quest_count > 2:
+                        return 1
+                
+                self.player_list[index].set_quest(card, age)
+                return 2
+        else:
+            return 3
+          
     #returns whether or not a player was found and at what index they were found
     def find_player(self, player_to_find):
         index = -1
@@ -666,6 +732,7 @@ class BloodRage(BoardGame):
                 return True, index
         return False, index
 
+    #returns whether or not a province was found and at what index that province was found at
     def find_province(self, province_to_find):
         index = -1 
         provinces = self.board.get_provinces()
@@ -753,6 +820,7 @@ class BloodRage(BoardGame):
 
         return True
 
+    #removes the drafted cards from the draftable caards
     def remove_cards(self):
         self.draftable_cards = np.asarray(self.draftable_cards)
         for i in range(np.size(self.draftable_cards, 0)):
@@ -762,6 +830,7 @@ class BloodRage(BoardGame):
         self.draftable_cards = np.delete(self.draftable_cards, 0, 1)
         self.draftable_cards = self.draftable_cards.tolist()
 
+    #adds cards that were drafted into players hands
     def add_to_final_hand(self):
         for i in range(len(self.drafted_cards)):
             self.player_list[i].add_to_hand(self.drafted_cards[i], self.current_age)
@@ -804,7 +873,8 @@ class BloodRage(BoardGame):
             self.draftable_cards = self.draftable_cards.tolist()
             return False
 
-    def ragnorok(self, num):
+    #begins the game by ragnoroking however provinces must be ragnoroked
+    def game_start_ragnorok(self, num):
         x = []
         for i in range(len(self.board.provinces)):
             if len(self.board.provinces[i].get_name()) > 3 and self.board.provinces[i].get_rag() == False:
@@ -826,7 +896,7 @@ class BloodRage(BoardGame):
                 return None
 
         if age == 1:
-            self.ragnorok(5 - len(self.player_list))
+            self.game_start_ragnorok(5 - len(self.player_list))
 
         if len(self.player_list) >= 2:
             self.draft_phase = True

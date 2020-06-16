@@ -235,6 +235,7 @@ async def summon(ctx, unit, province):
             await ctx.send('Trying to summon ship on land or vice versa')
         else:
             await ctx.send(unit.capitalize() + ' summoned to ' + province.capitalize())
+        
     else:
         await ctx.send('No implementation for game yet')
 
@@ -345,7 +346,6 @@ async def show_board(ctx):
     else:
         await ctx.send('No implementation for game yet')
 
-            
 
 ####################################################################
 #                    ______________________                        #
@@ -411,7 +411,6 @@ async def set_upgrade(ctx, age: int, card: int, slot: int):
     elif current_game.game_id == 'br':
         result = current_game.set_upgrades(age, card, slot, ctx.message.author)
         card_name = current_game.card_name_gen(age, card)
-        print(card_name)
 
         if result == 0:
             await ctx.send('Player not found')
@@ -423,6 +422,12 @@ async def set_upgrade(ctx, age: int, card: int, slot: int):
             await ctx.send(card_name + ' could not be set')
         else:
             await ctx.send(card_name + ' set in slot ' + slot)
+
+        rage = current_game.get_player_rage(ctx.message.author)
+        if rage == -1:
+            await ctx.send('Player not found')
+        else:
+            await ctx.send('You have ' + str(rage) + ' rage remaining.')
 
     else:
         await ctx.send('Not Blood Rage, command unused')
@@ -483,6 +488,37 @@ async def change_rage(ctx, delta: int):
         if result:
             found, index = current_game.find_player(ctx.message.author)
             await ctx.send(delta + ' added to current rage. You have ' + current_game.get_player_list()[index].get_current_rage() + ' rage left.')
+        else:
+            await ctx.send('Player not found')
+
+@bot.command(name='get_rage')
+async def show_current_rage(ctx):
+    if current_game.get_game_id() == 'br':
+        result = current_game.get_current_rage(ctx.message.author)
+        if result < -9:
+            await ctx.send('Player not found')
+        else:
+            await ctx.send('Current rage: ' + str(result))
+
+@bot.command(name='get_quests')
+async def get_quests(ctx):
+    if current_game.get_game_id() == 'br':
+        result = current_game.get_quests(ctx.message.author)
+        if result == -1:
+            await ctx.send('Player not found')
+        else:
+            await ctx.send(result)
+
+@bot.command(name='set_quest')
+async def add_quest(ctx, age: int, card: int):
+    if current_game.get_game_id() == 'br':
+        result = current_game.add_quest(age, card, ctx.message.author)
+        if result == 0:
+            await ctx.send('Card not in hand')
+        elif result == 1:
+            await ctx.send('Already too many copies of this quest')
+        elif result == 2:
+            await ctx.send('Quest set')
         else:
             await ctx.send('Player not found')
 
