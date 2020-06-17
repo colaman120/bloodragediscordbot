@@ -314,35 +314,58 @@ async def show_board(ctx):
         await ctx.send('No game selected')
     elif current_game.game_id == 'br':
         result = current_game.display_board()
-        for i in range(8):
-            await ctx.send('**Province:** ' + result[i][0] + ' (*' + result[i][1] + '*)')
-            await ctx.send('Ragnorok: ' + str(result[i][2]))
-            await ctx.send('Capacity: ' + str(result[i][3]))
-            await ctx.send('Reward: ' + result[i][4])
-            await ctx.send('Pieces: ')
-            if len(result[i][5]) == 0:
-                await ctx.send('Province empty')
-            else:
-                for j in range(len(result[i][5])):
-                    await ctx.send(result[i][5][j].to_string())
+        # for i in range(8):
+        #     await ctx.send('**Province:** ' + result[i][0] + ' (*' + result[i][1] + '*)')
+        #     await ctx.send('Ragnorok: ' + str(result[i][2]))
+        #     await ctx.send('Capacity: ' + str(result[i][3]))
+        #     await ctx.send('Reward: ' + result[i][4])
+        #     await ctx.send('Pieces: ')
+        #     if len(result[i][5]) == 0:
+        #         await ctx.send('Province empty')
+        #     else:
+        #         for j in range(len(result[i][5])):
+        #             await ctx.send(result[i][5][j].to_string())
 
-        await ctx.send('**Province:** ' + result[8][0])
-        await ctx.send('Pieces: ')
-        if len(result[8][5]) == 0:
-            await ctx.send('Province empty')
-        else:
-            for j in range(len(result[i][5])):
-                await ctx.send(result[i][5][j].to_string())
+        # await ctx.send('**Province:** ' + result[8][0])
+        # await ctx.send('Pieces: ')
+        # if len(result[8][5]) == 0:
+        #     await ctx.send('Province empty')
+        # else:
+        #     for j in range(len(result[i][5])):
+        #         await ctx.send(result[i][5][j].to_string())
 
         
-        for i in range(9, 13):
-            await ctx.send('**Fjord**: ' + result[i][0])
-            await ctx.send('Pieces: ')
-            if len(result[i][5]) == 0:
+        # for i in range(9, 13):
+        #     await ctx.send('**Fjord**: ' + result[i][0])
+        #     await ctx.send('Pieces: ')
+        #     if len(result[i][5]) == 0:
+        #         await ctx.send('Province empty')
+        #     else:
+        #         for j in range(len(result[i][5])):
+        #             await ctx.send(result[i][5][j].to_string())
+        for i in range(8):
+            await ctx.send('**' + result[i][0] + ':** __' + result[i][1] + '__')
+            if len(result[i][2]) == 0:
                 await ctx.send('Province empty')
             else:
-                for j in range(len(result[i][5])):
-                    await ctx.send(result[i][5][j].to_string())
+                for j in range(len(result[i][2])):
+                    await ctx.send(result[i][2][j].to_string())
+        
+        await ctx.send('**Yggdrasil**')
+        if len(result[8][2]) == 0:
+            await ctx.send('Province empty')
+        else:
+            for j in range(len(result[i][2])):
+                await ctx.send(result[i][2][j].to_string())
+        
+        for i in range(9, 13):
+            await ctx.send('**' + result[i][0].upper() + ' Fjord**')
+            if len(result[i][2]) == 0:
+                await ctx.send('Province empty')
+            else:
+                for j in range(len(result[i][2])):
+                    await ctx.send(result[i][2][j].to_string())
+
     else:
         await ctx.send('No implementation for game yet')
 
@@ -522,6 +545,20 @@ async def add_quest(ctx, age: int, card: int):
         else:
             await ctx.send('Player not found')
 
+@bot.command(name='ragnorok')
+async def rag(ctx, province):
+    if current_game.get_game_id() == 'br':
+        result = current_game.rag(province)
+        if result == 0:
+            await ctx.send(province.capitalize() + '  does not exist')
+        elif result == 1:
+            await ctx.send(province.capitalize() + ' already ragnoroked')
+        elif result == 2:
+            await ctx.send('?')
+        else:
+            await ctx.send(province.capitalize() + ' was ragonoroked')
+    else:
+        await ctx.send('wrong game')
 ####################################################################
 #                    _____________________                         #
 #                   |                    |                         #

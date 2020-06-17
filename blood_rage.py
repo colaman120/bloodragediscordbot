@@ -368,14 +368,12 @@ class BloodRage(BoardGame):
         else:
             return 3
 
-        print('Card name: ' + card_name)
         if card_name != 'Dwarf Chieftain' and card_name != 'Soldier of Hel':
             bad_chars = [';', ':', '!', "*"] 
             for i in bad_chars: 
                 card_cost = card_cost.replace(i, '')
             
             card_cost = int(card_cost)
-            print('Card cost: ' + str(card_cost))
             
             player_upgrades = self.player_list[index].get_clan_uc()
             for i in player_upgrades:
@@ -519,12 +517,7 @@ class BloodRage(BoardGame):
         return 1
 
     #kills all units in a province
-    def kill_all(self, province):
-        province = province.lower()
-        found, province_idx = self.find_province(province)
-        if found == False:
-            return 0
-
+    def kill_all(self, province_idx):
         piece_list = self.board.get_provinces()[province_idx].get_piece_list()
         for i in range(len(piece_list)):
             piece_list[i].kill()
@@ -584,11 +577,12 @@ class BloodRage(BoardGame):
     #based on the provinces that have already been ragnoroked due to the number of players
     def rag_check(self):
         x = np.arange(8)
+        y = []
         for i in range(8):
-            if self.board.get_provinces()[i].get_rag():
-                x = np.delete(x, i)
+            if self.board.get_provinces()[i].get_rag() == False:
+                y.append(x[i])
         
-        result = np.random.choice(x, 3, replace=False)
+        result = np.random.choice(y, 3, replace=False)
         return result
 
     #removes a card from ones hand
@@ -598,17 +592,36 @@ class BloodRage(BoardGame):
             return self.player_list[index].remove_card(card, age)
         else: 
             return 2
+ 
+    # #returns a board that is parsed and displayed by the bot
+    # def display_board(self):
+    #     to_return = []
+    #     province_list = self.board.get_provinces()
+    #     for i in range(len(province_list)):
+    #         province = []
+    #         province.append(province_list[i].get_name().capitalize())
+    #         province.append(province_list[i].get_sub()[0].capitalize())
+    #         province.append(province_list[i].get_rag())
+    #         province.append(province_list[i].get_cap())
+    #         if province_list[i].get_pillage_reward()[0] == 0:
+    #             province.append('Rage')
+    #         elif province_list[i].get_pillage_reward()[0] == 1:
+    #             province.append('Axes')
+    #         elif province_list[i].get_pillage_reward()[0] == 2:
+    #             province.append('Horns')
+    #         else:
+    #             province.append('5 Glory')
+    #         province.append(province_list[i].get_piece_list())
+    #         to_return.append(province)
+        
+    #     return to_return
 
-    #returns a board that is parsed and displayed by the bot
     def display_board(self):
         to_return = []
         province_list = self.board.get_provinces()
         for i in range(len(province_list)):
             province = []
             province.append(province_list[i].get_name().capitalize())
-            province.append(province_list[i].get_sub()[0].capitalize())
-            province.append(province_list[i].get_rag())
-            province.append(province_list[i].get_cap())
             if province_list[i].get_pillage_reward()[0] == 0:
                 province.append('Rage')
             elif province_list[i].get_pillage_reward()[0] == 1:
@@ -619,7 +632,6 @@ class BloodRage(BoardGame):
                 province.append('5 Glory')
             province.append(province_list[i].get_piece_list())
             to_return.append(province)
-        
         return to_return
 
     #returns a single province that is parsed and displayed by the bot
@@ -722,6 +734,198 @@ class BloodRage(BoardGame):
         else:
             return 3
           
+    def rag(self, province):
+        province = province.lower()
+        found, province_idx = self.find_province(province)
+        if found == False:
+            return 0
+        temp_province = self.board.get_provinces()[province_idx]
+
+        if temp_province.get_rag():
+            return 1
+        piece_list = temp_province.get_piece_list()
+        
+        if province_idx == 1 or province_idx == 2:
+            piece_list += self.board.get_provinces()[9].get_piece_list()
+            self.kill_all(9)
+        elif province_idx == 0 or province_idx == 4:
+            piece_list += self.board.get_provinces()[10].get_piece_list()
+            self.kill_all(10)
+        elif province_idx == 3 or province_idx == 5:
+            piece_list += self.board.get_provinces()[11].get_piece_list()
+            self.kill_all(11)
+        elif province_idx == 6 or province_idx == 7:
+            piece_list += self.board.get_provinces()[12].get_piece_list()
+            self.kill_all(12)
+        
+        self.kill_all(province_idx)
+
+        if len(piece_list) == 0:
+            return 3
+        else:
+            for i in range(len(piece_list)):
+                temp_player = piece_list[i].get_owner()
+                found, player_idx = self.find_player(temp_player)
+                if self.current_age == 1:
+                    self.player_list[player_idx].add_glory(2)
+                elif self.current_age == 2:
+                    self.player_list[player_idx].add_glory(3)
+                elif self.current_age == 3:
+                    self.player_list[player_idx].add_glory(4)
+                else:
+                    return 2
+            
+            return 3
+        
+    def check_completed_quests(self):
+        completed_quests = []
+        for i in range(len(self.player_list)):
+            completed_quests.append([]) 
+            for j in range(len(self.player_list[i].get_quests())):
+                completed_quests[i].append(False)
+                quest_name = self.card_name_gen(self.player_list[i].get_quests()[i][1], self.player_list[i].get_quests()[i][0])[0]
+                if quest_name == 'Alfheim Quest':
+                    alf1 = self.calculate_strength('gimle')
+                    alf2 = self.calculate_strength('anolang')
+                    if alf1 == i or alf2 == i:
+                        completed_quests[i][j] = True
+                elif quest_name == 'Jotunheim Quest':
+                    jot1 = self.calculate_strength('utgard')
+                    jot2 = self.calculate_strength('horgr')
+                    jot3 = self.calculate_strength('muspelheim')
+                    if jot1 == i or jot2 == i or jot3 == i:
+                        completed_quests[i][j] = True
+                elif quest_name == 'Manheim Quest':
+                    man1 = self.calculate_strength('myrkulor')
+                    man2 = self.calculate_strength('elvagar')
+                    man3 = self.calculate_strength('angerboda')
+                    if man1 == i or man2 == i or man3 == i:
+                        completed_quests[i][j] = True
+                elif quest_name == 'Glorious Death':
+                    temp_val = self.board.get_valhalla()
+                    count = 0
+                    for piece in temp_val:
+                        if piece.get_owner() == self.player_list[i]:
+                            count += 1
+                    if count >= 4:
+                        completed_quests[i][j] = True
+                elif quest_name == 'Yggdrasil Quest':
+                    ygg = self.calculate_strength('yggdrasil')
+                    if ygg == i:
+                        completed_quests[i][j] = True
+                elif quest_name == 'Widespread':
+                    p1 = self.calculate_strength('gimle')
+                    p2 = self.calculate_strength('anolang')
+                    p3 = self.calculate_strength('utgard')
+                    p4 = self.calculate_strength('horgr')
+                    p5 = self.calculate_strength('muspelheim')
+                    p6 = self.calculate_strength('myrkulor')
+                    p7 = self.calculate_strength('elvagar')
+                    p8 = self.calculate_strength('angerboda')
+                    p9 = self.calculate_strength('yggdrasil')
+
+                    count = 0
+                    if p1 == i:
+                        count += 1
+                    elif p2 == i:
+                        count += 1
+                    elif p3 == i:
+                        count += 1
+                    elif p4 == i:
+                        count += 1
+                    elif p5 == i:
+                        count += 1
+                    elif p6 == i:
+                        count += 1
+                    elif p7 == i:
+                        count += 1
+                    elif p8 == i:
+                        count += 1
+                    elif p9 == i:
+                        count += 1
+                    if count >= 2:
+                        completed_quests[i][j] = True
+        return completed_quests
+                                    
+    def calculate_strength(self, province):
+        province = province.lower()
+        found, province_idx = self.find_province(province)
+        if found == False:
+            return -2
+        
+        strengths = []
+        warrior_count = []
+        wucs = []
+        for i in range(len(self.player_list)):
+            strengths.append(0)
+            warrior_count.append(0)
+            brothers = False
+            experts = False
+            masters = False
+            wuc = self.player_list[i].get_warrior_uc()
+            if wuc == (5, 1) or wuc == (37, 1):
+                brothers = True
+                experts = False
+                masters = False
+            elif wuc == (4, 2) or wuc == (36, 2):
+                brothers = False
+                experts = True
+                masters = False
+            elif wuc == (4, 3) or wuc == (36, 3):
+                brothers = False
+                experts = False
+                masters = True
+            wucs.append([brothers, experts, masters])
+        
+        temp_province = self.board.get_provinces()[province_idx]
+        piece_list = temp_province.get_piece_list()
+        
+        if province_idx == 1 or province_idx == 2:
+            piece_list += self.board.get_provinces()[9].get_piece_list()
+
+        elif province_idx == 0 or province_idx == 4:
+            piece_list += self.board.get_provinces()[10].get_piece_list()
+
+        elif province_idx == 3 or province_idx == 5:
+            piece_list += self.board.get_provinces()[11].get_piece_list()
+
+        elif province_idx == 6 or province_idx == 7:
+            piece_list += self.board.get_provinces()[12].get_piece_list()
+
+        for piece in piece_list:
+            found, player_idx = self.find_player(piece.get_owner())
+            strengths[player_idx] += piece.get_strength()
+
+            if piece.get_type() == 'warrior':
+                warrior_count[player_idx] += 1
+
+            if piece.get_name() == 'dark elf' and province_idx == 8:
+                strengths[player_idx] += 2
+        
+        for i in range(len(strengths)):
+            if wucs[i][1]:
+                strengths[i] += warrior_count[i]
+            elif wucs[i][0] or wucs[i][2]:
+                pairs = int(warrior_count[i]/2)
+                if wucs[i][0]:
+                    strengths[i] += pairs
+                else:
+                    strengths[i] += pairs * 4
+        
+        print(strengths)
+        greatest_idx = -1
+        max_strength = 0
+        
+        for i in range(len(strengths)):
+            if strengths[i] > max_strength:
+                max_strength = strengths[i]
+                greatest_idx = i
+            elif strengths[i] == max_strength:
+                greatest_idx = -1
+            print('greatest: ' + str(greatest_idx))
+        
+        return greatest_idx
+
     #returns whether or not a player was found and at what index they were found
     def find_player(self, player_to_find):
         index = -1
@@ -883,8 +1087,8 @@ class BloodRage(BoardGame):
         rag = random.sample(x, num)
 
         for i in range(len(rag)):
-            self.kill_all(self.board.provinces[i].get_name())
-            self.board.provinces[i].set_ragnorok()
+            self.kill_all(rag[i])
+            self.board.provinces[rag[i]].set_ragnorok()
 
     #provides the initial hands per age
     def start_age(self, age):
