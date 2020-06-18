@@ -36,7 +36,7 @@ Wow. This bot came a long way. I put it down for a bit to focus on schoolwork bu
 
 **!show_board**: Displays the most vital information of the board in a condensed form to make for ease of reading.
 
-#### Blood Rage Specific:
+### Blood Rage Specific:
 **!create_br**: Sets the game to a Blood Rage game.
 
 **!start_age (age_number)**: Begins the age based on the number of players currently signed up and the age that is input in the command.
