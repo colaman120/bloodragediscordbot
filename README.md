@@ -7,7 +7,7 @@ order to play this game.
 Please keep in mind that I started this like this week and it's my first time creating a bot.
 I'm still in the process of fixing and adding a lot of things.
 
-####Update (6/18/2020)
+#### Update (6/18/2020)
 Wow. This bot came a long way. I put it down for a bit to focus on schoolwork but when summer break came it was all hands on deck. 
 
 ### General Commands:
