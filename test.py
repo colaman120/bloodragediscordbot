@@ -32,16 +32,23 @@ import numpy as np
 # print("remaining rage: " + str(game.player_list[0].get_current_rage()))
 # print(game.get_upgrades('p1'))
 #print(game.get_current_hand('p1'))
+p1 = [(11, 1), (10, 1)]
 
 
 game = BloodRage()
 game.add_player('p1')
 game.add_player('p2')
-game.summon_unit('p2', 'leader', 'anolang')
-game.summon_unit('p1', 'warrior', 'anolang')
-game.summon_unit('p1', 'warrior', 'anolang')
-game.summon_unit('p1', 'warrior', 'myrkulor')
-print(game.calculate_strength('anolang'))
+game.current_age = 3
+game.player_list[0].set_hand(p1)
+game.summon_unit('p1', 'warrior', 'horgr')
+game.summon_unit('p1', 'warrior', 'horgr')
+game.summon_unit('p1', 'warrior', 'horgr')
+game.summon_unit('p1', 'warrior', 'horgr')
+game.add_quest(1, 11, 'p1')
+game.add_quest(1, 10, 'p1')
+print(game.get_quests('p1'))
+print(game.end_age('horgr'))
+print(game.get_glory())
 #print(game.board.get_provinces()[3].get_piece_list())
 # print('Anolang')
 # for i in range(len(game.board.get_provinces()[3].get_piece_list())):

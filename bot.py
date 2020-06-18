@@ -219,7 +219,9 @@ async def summon(ctx, unit, province):
         await ctx.send('No game selected')
     elif current_game.game_id == 'br':
         result = current_game.summon_unit(ctx.message.author, unit, province)
-        if result == 0:
+        if result == -1:
+            await ctx.send('No rage remaining')
+        elif result == 0:
             await ctx.send('Player not found')
         elif result == 1:
             await ctx.send('Province not found')
@@ -344,32 +346,50 @@ async def show_board(ctx):
         #         for j in range(len(result[i][5])):
         #             await ctx.send(result[i][5][j].to_string())
         for i in range(8):
-            await ctx.send('**' + result[i][0] + ':** __' + result[i][1] + '__')
-            if len(result[i][2]) == 0:
+            await ctx.send('**' + result[i][0] + ':** __' + result[i][1] + '__ (' + str(result[i][2]) + ')')
+            if len(result[i][3]) == 0:
                 await ctx.send('Province empty')
             else:
-                for j in range(len(result[i][2])):
-                    await ctx.send(result[i][2][j].to_string())
+                for j in range(len(result[i][3])):
+                    await ctx.send(result[i][3][j].to_string())
         
         await ctx.send('**Yggdrasil**')
-        if len(result[8][2]) == 0:
+        if len(result[8][3]) == 0:
             await ctx.send('Province empty')
         else:
-            for j in range(len(result[i][2])):
-                await ctx.send(result[i][2][j].to_string())
+            for j in range(len(result[i][3])):
+                await ctx.send(result[i][3][j].to_string())
         
         for i in range(9, 13):
             await ctx.send('**' + result[i][0].upper() + ' Fjord**')
-            if len(result[i][2]) == 0:
+            if len(result[i][3]) == 0:
                 await ctx.send('Province empty')
             else:
-                for j in range(len(result[i][2])):
-                    await ctx.send(result[i][2][j].to_string())
+                for j in range(len(result[i][3])):
+                    await ctx.send(result[i][3][j].to_string())
 
     else:
         await ctx.send('No implementation for game yet')
 
-
+@bot.command(name='end_round')
+async def end_round(ctx, province):
+    if current_game == None:
+        await ctx.send('No game selected')
+    elif current_game.game_id == 'br':
+        result = current_game.end_age(province)
+        if result == 0:
+            await ctx.send('Players must discard to one card in hand')
+        elif result == 1:
+            await ctx.send(province.capitalize() + ' does not exist')
+        else:
+            quests = result[0]
+            valhalla = result[1]
+            for i in range(len(current_game.get_player_list())):
+                await ctx.send(current_game.get_player_list()[i].get_player_object().display_name + ": ")
+                for j in range(len(result[i])):
+                    await ctx.send(str(quests[i][j]))
+            
+            await ctx.send(valhalla)
 ####################################################################
 #                    ______________________                        #
 #                   |                     |                        #
@@ -501,8 +521,11 @@ async def show_pillage_rewards(ctx):
 async def show_valhalla(ctx):
     if current_game.get_game_id() == 'br':
         result = current_game.show_valhalla()
-        for i in range(len(result)):
-            await ctx.send('**' + result[i].get_name() + '**: ' + result[i].get_owner())
+        if len(result) == 0:
+            await ctx.send('no units in valhalla')
+        else:
+            for i in range(len(result)):
+                await ctx.send('**' + result[i].get_name() + '**: ' + result[i].get_owner())
 
 @bot.command(name='add_rage')
 async def change_rage(ctx, delta: int):
@@ -510,7 +533,7 @@ async def change_rage(ctx, delta: int):
         result = current_game.change_rage(delta, ctx.message.author)
         if result:
             found, index = current_game.find_player(ctx.message.author)
-            await ctx.send(delta + ' added to current rage. You have ' + current_game.get_player_list()[index].get_current_rage() + ' rage left.')
+            await ctx.send(str(delta) + ' added to current rage. You have ' + str(current_game.get_player_list()[index].get_current_rage()) + ' rage left.')
         else:
             await ctx.send('Player not found')
 
@@ -536,7 +559,9 @@ async def get_quests(ctx):
 async def add_quest(ctx, age: int, card: int):
     if current_game.get_game_id() == 'br':
         result = current_game.add_quest(age, card, ctx.message.author)
-        if result == 0:
+        if result == -1:
+            await ctx.send('No rage remaining')
+        elif result == 0:
             await ctx.send('Card not in hand')
         elif result == 1:
             await ctx.send('Already too many copies of this quest')
