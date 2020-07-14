@@ -111,12 +111,32 @@ async def remove_player(ctx, un, discrim):
         await ctx.send(un + ' not found in game')
 
 @bot.command(name='add_stat', help='Add to your stats (Parameters: Stat, Delta)')
-async def add_stats(ctx, stat, add: int):
+async def add_stats(ctx):
     global current_game
 
     if current_game == None:
-        await ctx.send('No game selected')
+        await ctx.send('No game selected')        
+        
     elif current_game.game_id == 'br':
+        while True:
+            await ctx.send('What stat would you like to modify?')
+            msg = await bot.wait_for('message', check=lambda message: message.author == ctx.author)
+            stat = msg.content.lower()
+
+            if stat == 'rage' or stat == 'axes' or stat == 'horns':
+                break
+            elif stat == 'quit':
+                await ctx.send('Stat not added')
+                return
+
+        await ctx.send('How much?')
+        msg = await bot.wait_for('message', check=lambda message: message.author == ctx.author)
+        try:
+            add = int(msg.content)
+        except ValueError:
+            await ctx.send('Not an integer value. Try command again')
+            return
+
         found, index = current_game.find_player(ctx.message.author)
         if found:
             stat = stat.lower()
@@ -144,7 +164,7 @@ async def add_stats(ctx, stat, add: int):
         else:
             await ctx.send('Player not found')
     else:
-        await ctx.send('Stat not found')
+        await ctx.send('how did you even get here')
 
 @bot.command(name='get_stats', help='Shows your clan stats')
 async def get_stats(ctx):
@@ -181,12 +201,34 @@ async def get_hand(ctx):
                 await ctx.send(hand[i])
 
 @bot.command(name='card', help='View a specific card (Parameters: Age, Card)')
-async def get_card(ctx, age: int, card: int):
+async def get_card(ctx):
     global current_game
 
     if current_game == None:
         await ctx.send('No game selected')
     elif current_game.game_id == 'br':
+        while True:
+            await ctx.send('What age?')
+            msg = await bot.wait_for('message', check=lambda message: message.author == ctx.author)
+            try:
+                age = int(msg.content)
+            except ValueError:
+                await ctx.send('Not an integer value. Try command again')
+                return
+
+            if age > 0 and age < 4:
+                break
+            else:
+                ctx.send('Not a valid age')
+        
+        await ctx.send('What card number?')
+        msg = await bot.wait_for('message', check=lambda message: message.author == ctx.author)
+        try:
+            card = int(msg.content)
+        except ValueError:
+            await ctx.send('Not an integer value. Try command again')
+            return
+
         result = current_game.get_card(age, card)
         if result == None:
             await ctx.send('Card not found')
@@ -199,10 +241,32 @@ async def get_card(ctx, age: int, card: int):
         await ctx.send('No implementation for current game')
 
 @bot.command(name='remove_card', help='Removes card from hand (Parameters: Age, Card)')
-async def remove_card(ctx, age: int, card: int):
+async def remove_card(ctx):
     if current_game == None:
         await ctx.send('No game selected')
     elif current_game.game_id == 'br':
+        while True:
+            await ctx.send('What age?')
+            msg = await bot.wait_for('message', check=lambda message: message.author == ctx.author)
+            try:
+                age = int(msg.content)
+            except ValueError:
+                await ctx.send('Not an integer value. Try command again')
+                return
+                
+            if age > 0 and age < 4:
+                break
+            else:
+                ctx.send('Not a valid age')
+        
+        await ctx.send('What card number?')
+        msg = await bot.wait_for('message', check=lambda message: message.author == ctx.author)
+        try:
+            card = int(msg.content)
+        except ValueError:
+            await ctx.send('Not an integer value. Try command again')
+            return
+        
         result = current_game.remove_card(card, age, ctx.message.author)
         if result == 0:
             await ctx.send('Card removed from hand')
@@ -214,10 +278,18 @@ async def remove_card(ctx, age: int, card: int):
         await ctx.send('No implementation for game yet')
 
 @bot.command(name='summon')
-async def summon(ctx, unit, province):
+async def summon(ctx):
     if current_game == None:
         await ctx.send('No game selected')
     elif current_game.game_id == 'br':
+        await ctx.send('What unit would you like to summon?')
+        msg = await bot.wait_for('message', check=lambda message: message.author == ctx.author)
+        unit = msg.content.lower()
+
+        await ctx.send('What province would you like to summon to?')
+        msg = await bot.wait_for('message', check=lambda message: message.author == ctx.author)
+        province = msg.content.lower()
+
         result = current_game.summon_unit(ctx.message.author, unit, province)
         if result == -1:
             await ctx.send('No rage remaining')
@@ -242,10 +314,18 @@ async def summon(ctx, unit, province):
         await ctx.send('No implementation for game yet')
 
 @bot.command(name='kill_piece')
-async def kill(ctx, unit, province):
+async def kill(ctx):
     if current_game == None:
         await ctx.send('No game selected')
     elif current_game.game_id == 'br':
+        await ctx.send('What unit would you like to kill?')
+        msg = await bot.wait_for('message', check=lambda message: message.author == ctx.author)
+        unit = msg.content.lower()
+
+        await ctx.send('What province is that unit in?')
+        msg = await bot.wait_for('message', check=lambda message: message.author == ctx.author)
+        province = msg.content.lower()
+
         result = current_game.kill(ctx.message.author, unit, province)
         if result == 0:
             await ctx.send('Unit not found')
@@ -259,10 +339,30 @@ async def kill(ctx, unit, province):
         await ctx.send('No implementation for game yet')
 
 @bot.command(name='move')
-async def move(ctx, unit, num: int, province_from, province_to):
+async def move(ctx):
     if current_game == None:
         await ctx.send('No game selected')
     elif current_game.game_id == 'br':
+        await ctx.send('What type of unit would you like to move?')
+        msg = await bot.wait_for('message', check=lambda message: message.author == ctx.author)
+        unit = msg.content.lower()
+
+        await ctx.send('How many would you like to move?')
+        msg = await bot.wait_for('message', check=lambda message: message.author == ctx.author)
+        try:
+            num = int(msg.content)
+        except ValueError:
+            await ctx.send('Not an integer value. Try command again')
+            return
+
+        await ctx.send('Province from?')
+        msg = await bot.wait_for('message', check=lambda message: message.author == ctx.author)
+        province_from = msg.content.lower()
+
+        await ctx.send('Province to?')
+        msg = await bot.wait_for('message', check=lambda message: message.author == ctx.author)
+        province_to = msg.content.lower()        
+        
         result = current_game.move(ctx.message.author, unit, num, province_from, province_to)
         if result == 0:
             await ctx.send('Player not found')
@@ -289,26 +389,6 @@ async def show_board_image(ctx):
         await ctx.send('No game selected')
     elif current_game.game_id == 'br':
         await ctx.send(file=discord.File('data/BR_map.jpg'))
-
-@bot.command(name='show_province')
-async def show_province(ctx, province):
-    if current_game == None:
-        await ctx.send('No game selected')
-    elif current_game.game_id == 'br':
-        result = current_game.display_province(province)
-        if len(result[0]) == 2:
-            await ctx.send('**Province:** ' + province.capitalize() + ' (*' + result[0][0].capitalize() + ', ' + result[0][1].capitalize() + '*)')
-        else:
-            await ctx.send('**Province:** ' + province.capitalize() + ' (*' + result[0][0].capitalize() + '*)')
-        await ctx.send('Ragnorok: ' + str(result[1]))
-        await ctx.send('Capacity: ' + str(result[2]))
-        await ctx.send('Reward: ' + result[3])
-        await ctx.send('Pieces: ')
-        if len(result[4]) == 0:
-            await ctx.send('Province empty')
-        else:
-            for j in range(len(result[4])):
-                await ctx.send(result[4][j].to_string())
 
 @bot.command(name='show_board')
 async def show_board(ctx):
@@ -372,10 +452,14 @@ async def show_board(ctx):
         await ctx.send('No implementation for game yet')
 
 @bot.command(name='end_round')
-async def end_round(ctx, province):
+async def end_round(ctx):
     if current_game == None:
         await ctx.send('No game selected')
     elif current_game.game_id == 'br':
+        await ctx.send('What age?')
+        msg = await bot.wait_for('message', check=lambda message: message.author == ctx.author)
+        province = msg.content.lower()
+
         result = current_game.end_age(province)
         if result == 0:
             await ctx.send('Players must discard to one card in hand')
@@ -569,6 +653,26 @@ async def add_quest(ctx, age: int, card: int):
             await ctx.send('Quest set')
         else:
             await ctx.send('Player not found')
+
+@bot.command(name='show_province')
+async def show_province(ctx, province):
+    if current_game == None:
+        await ctx.send('No game selected')
+    elif current_game.game_id == 'br':
+        result = current_game.display_province(province)
+        if len(result[0]) == 2:
+            await ctx.send('**Province:** ' + province.capitalize() + ' (*' + result[0][0].capitalize() + ', ' + result[0][1].capitalize() + '*)')
+        else:
+            await ctx.send('**Province:** ' + province.capitalize() + ' (*' + result[0][0].capitalize() + '*)')
+        await ctx.send('Ragnorok: ' + str(result[1]))
+        await ctx.send('Capacity: ' + str(result[2]))
+        await ctx.send('Reward: ' + result[3])
+        await ctx.send('Pieces: ')
+        if len(result[4]) == 0:
+            await ctx.send('Province empty')
+        else:
+            for j in range(len(result[4])):
+                await ctx.send(result[4][j].to_string())
 
 @bot.command(name='ragnorok')
 async def rag(ctx, province):

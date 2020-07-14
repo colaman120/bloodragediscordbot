@@ -595,29 +595,6 @@ class BloodRage(BoardGame):
             return self.player_list[index].remove_card(card, age)
         else: 
             return 2
- 
-    # #returns a board that is parsed and displayed by the bot
-    # def display_board(self):
-    #     to_return = []
-    #     province_list = self.board.get_provinces()
-    #     for i in range(len(province_list)):
-    #         province = []
-    #         province.append(province_list[i].get_name().capitalize())
-    #         province.append(province_list[i].get_sub()[0].capitalize())
-    #         province.append(province_list[i].get_rag())
-    #         province.append(province_list[i].get_cap())
-    #         if province_list[i].get_pillage_reward()[0] == 0:
-    #             province.append('Rage')
-    #         elif province_list[i].get_pillage_reward()[0] == 1:
-    #             province.append('Axes')
-    #         elif province_list[i].get_pillage_reward()[0] == 2:
-    #             province.append('Horns')
-    #         else:
-    #             province.append('5 Glory')
-    #         province.append(province_list[i].get_piece_list())
-    #         to_return.append(province)
-        
-    #     return to_return
 
     #returns a board that is parsed and displayed by the bot
     def display_board(self):
