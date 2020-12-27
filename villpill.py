@@ -217,8 +217,102 @@ class VillPill(BoardGame):
         #         nums.append(temp_2)
         # return matchups, nums
 
+
+# covered -, +, +*, O, B, S, S*, C, E*, R, E
+# need to cover T
+# need to add opp_card number or find some other way to do it with out specifically requiring it, would
+# need to be another method, not impossible
+
     def run_code(self, num_card, player_idx, opp_idx, opp_color):
         code = self.deck.at[num_card, opp_color.capitalize()]
+
+        pointer_idx = 0
+        while (pointer_idx < len(code)):
+            if code[pointer_idx] =='-':
+                return
+
+            if code[pointer_idx] == '+':
+                if code[pointer_idx + 1] == '*':
+                    return
+                else:
+                    self.add_turnips(int(code[pointer_idx + 1]), player_idx)
+                pointer_idx += 2
+                continue
+
+            if code[pointer_idx] == 'O':
+                self.add_turnips(int(code[pointer_idx + 1]), opp_idx)
+                pointer_idx += 2
+                continue
+
+            if code[pointer_idx] == 'B':
+                self.bank_turnips(int(code[pointer_idx] + 1), player_idx)
+                pointer_idx += 2
+                continue
+                
+            if code[pointer_idx] == 'S':
+                banked = False
+                to_steal = 0
+                if code[pointer_idx + 1] == '*':
+                    banked = True
+                    to_steal = int(code[pointer_idx + 2])
+                    pointer_idx += 3
+                
+                elif code[pointer_idx + 1] != '-':
+                    to_steal = int(code[pointer_idx + 1])
+                    pointer_idx += 2
+                
+                else:
+                    negative_steal = code[pointer_idx:pointer_idx + 1]
+                    to_steal = int(negative_steal)
+                    pointer_idx += 2
+                
+                self.steal_turnips(to_steal, player_idx, opp_idx, banked)
+            
+            if code[pointer_idx] == 'C':
+                self.add_turnips(int(code[pointer_idx + 1]), player_idx)
+                pointer_idx += 2
+                continue
+
+            if code[pointer_idx] == 'E':
+                opp_card = True
+                if code[pointer_idx + 1] == '*':
+                    opp_card = False
+                    self.exhaust_card(num_card, opp_idx, opp_card)
+                    pointer_idx += 2
+                else:
+                    self.exhaust_card(num_card, opp_idx, opp_card)
+                    pointer_idx += 1
+                continue
+                
+            if code[pointer_idx] == 'R':
+                cost = 1
+                if code[pointer_idx + 1].isnumeric():
+                    cost = 0
+                    pointer_idx += 1
+
+                self.buy_relic(player_idx, cost)
+                pointer_idx += 1
+                continue
+
+            if code[pointer_idx] == 'T':
+                self.trade_card(player_idx, opp_idx, num_card)
+                pointer_idx += 1
+                continue
+
+#need to check turnip amounts before taking away and stuff
+    def add_turnips(self, delta, player_idx):
+
+    def bank_turnips(self, delta, player_idx):
+
+    def steal_turnips(self, delta, player_idx, opp_idx, banked):
+
+    def exhaust_card(self, card_num, opp_idx, opp_card):
+    
+    def buy_relic(self, player_idx, cost):
+
+    def trade_card(self, player_idx, opp_idx, card_num):
+
+
 
 
     def take_turn(self):
