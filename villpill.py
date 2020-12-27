@@ -218,7 +218,7 @@ class VillPill(BoardGame):
         # return matchups, nums
 
     def run_code(self, num_card, player_idx, opp_idx, opp_color):
-        code = self.deck.at[num_card, opp_color.capitalize()];
+        code = self.deck.at[num_card, opp_color.capitalize()]
 
 
     def take_turn(self):

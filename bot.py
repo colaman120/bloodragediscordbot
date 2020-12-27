@@ -283,16 +283,14 @@ async def summon(ctx):
         await ctx.send('No game selected')
     elif current_game.game_id == 'br':
         val_summon = current_game.check_val_summon(ctx.message.author)
-        summoning_from_val = False
+        # summoning_from_val = False
 
-        if val_summon:
-            await ctx.send('Would you like to summon from Valhalla?')
-            msg = await bot.wait_for('message', check=lambda message: message.author == ctx.author)
+        # if val_summon:
+        #     await ctx.send('Would you like to summon from Valhalla?')
+        #     msg = await bot.wait_for('message', check=lambda message: message.author == ctx.author)
             
-            if msg.lower() == 'yes' or msg.lower() == 'y':
-                summoning_from_val = True
-            
-
+        #     if msg.lower() == 'yes' or msg.lower() == 'y':
+        #         summoning_from_val = True
 
         await ctx.send('What unit would you like to summon?')
         msg = await bot.wait_for('message', check=lambda message: message.author == ctx.author)
