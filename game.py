@@ -9,6 +9,14 @@ class BoardGame:
 
     def get_player_list(self):
         return self.player_list
+    
+    #remove a player from the game
+    def remove_player(self, player_un, player_discrim):
+        for i in range(len(self.player_list)):
+            if self.player_list[i].get_player_object().name == player_un and self.player_list[i].get_player_object().discriminator == player_discrim:
+                self.player_list.pop(i)
+                return True
+        return False
 
 class Player:
     def __init__(self, set_player):

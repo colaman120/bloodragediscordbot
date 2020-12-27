@@ -3,7 +3,6 @@ import random
 import numpy as np
 import pandas
 import copy
-import enum
 from game import BoardGame
 from game import Player
 from BRPiece import BRPiece
@@ -252,18 +251,6 @@ class BloodRage(BoardGame):
         self.player_list.append(new_player)
         self.drafted_cards.append(-1)
         return True
-
-    #remove a player from the game
-    def remove_player(self, player_un, player_discrim):
-        for i in range(len(self.player_list)):
-            if self.player_list[i].get_player_object().name == player_un and self.player_list[i].get_player_object().discriminator == player_discrim:
-                self.player_list.pop(i)
-                return True
-        return False
-
-    # return the number of players in the current game
-    def num_of_players(self):
-        return len(self.player_list)
 
     #adds or subtracts glory to the given player
     def add_glory(self, player, delta):
@@ -672,6 +659,16 @@ class BloodRage(BoardGame):
             return self.player_list[index].get_current_rage()
         else:
             return -10
+
+    def check_val_summon(self, player):
+        found, index = self.find_player(player)
+        if found:
+            clan_upgrades = self.player_list[index].get_clan_uc()
+            for card in clan_upgrades:
+                if card == (7, 3):
+                    return True
+
+        return False
 
     def get_quests(self, player):
         found, index = self.find_player(player)

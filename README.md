@@ -10,6 +10,11 @@ I'm still in the process of fixing and adding a lot of things.
 #### Update (6/18/2020)
 Wow. This bot came a long way. I put it down for a bit to focus on schoolwork but when summer break came it was all hands on deck. 
 
+#### Update (12/27/2020)
+What a year. I put this down again to focus on school. Before that, I had started work on support for a new game, Village Pillage. I am now continuing to work on this game, but I, again, am rewriting virtually all of the important, non-boiler plate code.
+
+Also note that I have made a good amount of changes to how using the commands for this bot works without updating the README here, so do not assume all the commands here work as they are described. This was mostly for the expansion into a different game. 
+
 ### General Commands:
 **!join**: Allows discord users to enter the ongoing game. Anyone that wants to join must type this command. 
 
