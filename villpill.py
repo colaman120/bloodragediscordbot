@@ -11,10 +11,9 @@ class VillPill(BoardGame):
                 super().__init__(set_player)
                 self.banked = 1
                 self.stockpile = 1
-                # self.p_bank = 1
-                # self.p_stockpile = 1
-                # self.f_stockpile = 1
-                self.sceptre = False
+                self.p_bank = 1
+                self.p_stockpile = 1
+                self.scepter = False
                 self.throne = False
                 self.crown = False
                 self.hand = [0, 1, 2, 3]
@@ -27,14 +26,11 @@ class VillPill(BoardGame):
             def get_stockpile(self):
                 return self.stockpile
 
-            # def get_pstock(self):
-            #     return self.p_stockpile
+            def get_pstock(self):
+                return self.p_stockpile
             
-            # def get_pbank(self):
-            #     return self.p_bank
-            
-            # def get_fstock(self):
-            #     return self.f_stockpile
+            def get_pbank(self):
+                return self.p_bank
 
             def get_scepter(self):
                 return self.sceptre
@@ -103,6 +99,21 @@ class VillPill(BoardGame):
                 self.stockpile -= num
                 self.banked += num
     
+            def purchase(self, delta):
+                if delta > self.stockpile:
+                    difference = delta - self.stockpile
+                    
+                    if self.banked < difference:
+                        return False:
+                    else:
+                        self.banked -= difference
+                        self.stockpile = 0
+                        return True
+                
+                else:
+                    self.stockpile -= delta
+                    return True
+
             def all_cards_played(self):
                 return self.played[0] != -1 and self.played[1] != -1
     
@@ -131,6 +142,14 @@ class VillPill(BoardGame):
                 index = i
                 return True, index
         return False, index
+
+    def find_played_card(self, card_num):
+        for i in range(len(self.player_list)):
+            for j in range(2):
+                if player.played[] == card_num:
+                    return True, i, j
+        
+        return False, -1, -1
 
     def check_card_in_hand(self, card, player_index):
         for i in self.player_list[player_index].get_hand():
@@ -277,10 +296,10 @@ class VillPill(BoardGame):
                 opp_card = True
                 if code[pointer_idx + 1] == '*':
                     opp_card = False
-                    self.exhaust_card(num_card, opp_idx, opp_card)
+                    self.exhaust_card(num_card, player_idx, opp_idx, opp_card)
                     pointer_idx += 2
                 else:
-                    self.exhaust_card(num_card, opp_idx, opp_card)
+                    self.exhaust_card(num_card, player_idx, opp_idx, opp_card)
                     pointer_idx += 1
                 continue
                 
@@ -299,21 +318,116 @@ class VillPill(BoardGame):
                 pointer_idx += 1
                 continue
 
-#need to check turnip amounts before taking away and stuff
+    #need to check turnip amounts before taking away and stuff
     def add_turnips(self, delta, player_idx):
+        self.player_list[player_idx].stockpile += delta
 
     def bank_turnips(self, delta, player_idx):
+        player = self.player_list[player_idx]
+
+        if len(self.player_list) > 2:
+            if delta > 5 - player.bank:
+                delta = 5 - player.bank
+            
+        elif len(self.player_list) == 2:
+            if delta > 4 - player.bank:
+                delta = 4 - player.bank
+        
+        self.player_list[player_idx].stockpile -= delta
+        self.player_list[player_idx].stockpile += delta
 
     def steal_turnips(self, delta, player_idx, opp_idx, banked):
+        turnips_stolen = 0
 
-    def exhaust_card(self, card_num, opp_idx, opp_card):
+        if delta > self.player_list[opp_idx].get_pstock():
+            turnips_stolen += self.player_list[opp_idx].get_pstock()
+            self.player_list[opp_idx].stockpile = 0
+
+            if banked and delta - turnips_stolen > 0:
+                remaining = delta - turnips_stolen
+                if self.player_list[opp_idx].get_pbank() < remaining:
+                    turnips_stolen += self.player_list[opp_idx].get_pbank()
+                    self.player_list[opp_idx].bank = 0
+                
+                else:
+                    turnips_stolen += self.player_list[opp_idx].get_pbank() - remaining
+                    self.player_list[opp_idx].bank -= remaining
+            
+            else:
+                turnips_stolen = delta
+                self.player_list[opp_idx].stockpile -= delta
+            
+        self.player_list[player_idx].stockpile += turnips_stolen
+
+    def exhaust_card(self, card_num, player_idx, opp_idx, opp_card):
+        if opp_card:
+            found, temp, card_pos = self.find_played_card(card_num)
+            if found and card_pos == 1:
+                self.player_list[opp_idx].exhaust_card(self.player_list[opp_idx].played[0])
+
+            elif found and card_pos == 0:
+                self.player_list[opp_idx].exhaust_card(self.player_list[opp_idx].played[1])
+
+        elif opp_card == False:
+            self.player_list[player_idx].exhaust_card(card_num)
     
     def buy_relic(self, player_idx, cost):
+        player = self.player_list[player_idx]
+        total_turnips = player.get_banked() + player.get_stockpile()
+
+        if len(self.player_list) == 2:
+            if player.get_scepter() == False and total_turnips >= 6:
+                player.purchase(6)
+                player.buy_scepter()
+
+            elif player.get_scepter() and player.get_crown() == False and total_turnips >= 7:
+                player.purchase(7)
+                player.buy_crown()
+            
+            elif player.get_scepter() and player.get_crown() and player.get_throne() == False and total_turnips >= 8:
+                player.purchase(8)
+                player.buy_throne()
+
+        else:
+            if player.get_scepter() == False and total_turnips >= 8:
+                player.purchase(8)
+                player.buy_scepter()
+
+            elif player.get_scepter() and player.get_crown() == False and total_turnips >= 9:
+                player.purchase(9)
+                player.buy_crown()
+            
+            elif player.get_scepter() and player.get_crown() and player.get_throne() == False and total_turnips >= 10:
+                player.purchase(10)
+                player.buy_throne()
 
     def trade_card(self, player_idx, opp_idx, card_num):
+        found, temp, player_card_pos = self.find_played_card(card_num)
+        opp_card_pos = -1
 
+        if player_card_pos == 0:
+            opp_card_pos = 1
+        elif player_card_pos == 1:
+            opp_card_pos = 0
 
+        opp_card = self.player_list[opp_idx].played[opp_card_pos]
+        player_card = self.player_list[player_idx].played[player_card_pos]
 
+        player_card, opp_card = opp_card, player_card
+
+    def update_p(self):
+        for player in self.player_list:
+            player.p_bank = player.get_banked()
+            player.p_stockpile = player.get_stockpile()
+
+    def unexhaust_all(self):
+        for player in self.player_list:
+            player.unexhaust_card()
+
+    def clear_player(self):
+        for player in self.player_list:
+            for i in player.played:
+                i  = -1
 
     def take_turn(self):
         if self.check_all_play():
@@ -322,25 +436,42 @@ class VillPill(BoardGame):
             r_nums, r_player_idx, r_opp, r_opp_color = self.determine_matchups('red')
             y_nums, y_player_idx, y_opp, y_opp_color = self.determine_matchups('yellow')
             shepard_check, s_player_idx = self.check_shepard(g_player_idx, g_nums)
+            #unexhaust any exhausted cards and readd them into hand
+            self.unexhaust_all()
 
             if len(g_nums) != 0:
                 for i in range(len(g_nums)):
                     self.run_code(g_nums[i], g_player_idx[i], g_opp[i], g_opp_color[i])
             
+            self.update_p()
+            
             if len(b_nums) != 0:
                 for i in range(len(b_nums)):
                     self.run_code(b_nums[i], b_player_idx[i], b_opp[i], b_opp_color[i])
 
+            self.update_p()
+
             if len(r_nums) != 0:
                 for i in range(len(r_nums)):
                     self.run_code(r_nums[i], r_player_idx[i], r_opp[i], r_opp_color[i])
+            
+            self.update_p()
 
             if len(y_nums) != 0:
                 for i in range(len(y_nums)):
                     self.run_code(y_nums[i], y_player_idx[i], y_opp[i], y_opp_color[i])
+            
+            self.update_p()
 
             if shepard_check:
                 self.player_list[s_player_idx].stockpile += 4
+
+            self.update_p()
+
+            self.clear_played()
+           
+        else:
+            return False
                 
         # if self.check_all_play():
         #     matchups, nums = self.determine_matchup()

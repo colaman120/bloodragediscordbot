@@ -5,6 +5,7 @@ import numpy as np
 import pandas
 import copy
 from blood_rage import BloodRage
+from villpill import VillPill
 
 import discord
 from dotenv import load_dotenv
@@ -110,7 +111,7 @@ async def remove_player(ctx, un, discrim):
     else:
         await ctx.send(un + ' not found in game')
 
-@bot.command(name='add_stat', help='Add to your stats (Parameters: Stat, Delta)')
+@bot.command(name='add_stat', help='Add to your stats')
 async def add_stats(ctx):
     global current_game
 
@@ -185,6 +186,12 @@ async def get_stats(ctx):
             await ctx.send('Horns: ' + str(horns))
         else:
             await ctx.send('Player not found')
+
+    # elif current_game.game_id == 'vp':
+    #     found, index = current_game.find_player(ctx.message.author)
+
+    #     if found:
+    #         banked = current_game.get_player_list()[index].get_banked()
     else:
         await ctx.send('Game not found')
 
@@ -200,7 +207,7 @@ async def get_hand(ctx):
             for i in range(len(hand)):
                 await ctx.send(hand[i])
 
-@bot.command(name='card', help='View a specific card (Parameters: Age, Card)')
+@bot.command(name='card', help='View a specific card')
 async def get_card(ctx):
     global current_game
 
@@ -240,7 +247,7 @@ async def get_card(ctx):
     else:
         await ctx.send('No implementation for current game')
 
-@bot.command(name='remove_card', help='Removes card from hand (Parameters: Age, Card)')
+@bot.command(name='remove_card', help='Removes card from hand')
 async def remove_card(ctx):
     if current_game == None:
         await ctx.send('No game selected')
@@ -698,6 +705,21 @@ async def rag(ctx, province):
             await ctx.send(province.capitalize() + ' was ragonoroked')
     else:
         await ctx.send('wrong game')
+
+####################################################################
+#                    ______________________                        #
+#                   |                     |                        #
+#-------------------|     VP Specific     |------------------------#
+#                   |_____________________|                        #
+#                                                                  #
+####################################################################
+@bot.command(name='game_vp')
+async def create_vp(ctx):
+    global current_game
+    current_game = None
+    current_game = VillPill()
+    await ctx.send('Game set to Blood Rage')
+
 ####################################################################
 #                    _____________________                         #
 #                   |                    |                         #
