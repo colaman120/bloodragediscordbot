@@ -550,6 +550,8 @@ async def draft_from_dm(ctx, c_num: int):
 
 @bot.command(name='set_upgrade', help='Set upgrade cards in your clan data (Blood Rage Specific)')
 async def set_upgrade(ctx, age: int, card: int, slot: int):
+    global current_game
+
     if current_game == None:
         await ctx.send('Current game not Blood Rage')
     elif current_game.game_id == 'br':
@@ -567,7 +569,7 @@ async def set_upgrade(ctx, age: int, card: int, slot: int):
         else:
             await ctx.send(card_name + ' set in slot ' + slot)
 
-        rage = current_game.get_player_rage(ctx.message.author)
+        rage = current_game.get_current_rage(ctx.message.author)
         if rage == -1:
             await ctx.send('Player not found')
         else:

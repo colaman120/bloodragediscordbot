@@ -658,7 +658,7 @@ class BloodRage(BoardGame):
         if found:
             return self.player_list[index].get_current_rage()
         else:
-            return -10
+            return -1
 
     def check_val_summon(self, player):
         found, index = self.find_player(player)

@@ -104,7 +104,7 @@ class VillPill(BoardGame):
                     difference = delta - self.stockpile
                     
                     if self.banked < difference:
-                        return False:
+                        return False
                     else:
                         self.banked -= difference
                         self.stockpile = 0
@@ -146,7 +146,7 @@ class VillPill(BoardGame):
     def find_played_card(self, card_num):
         for i in range(len(self.player_list)):
             for j in range(2):
-                if player.played[] == card_num:
+                if player.played[j] == card_num:
                     return True, i, j
         
         return False, -1, -1
@@ -424,7 +424,7 @@ class VillPill(BoardGame):
         for player in self.player_list:
             player.unexhaust_card()
 
-    def clear_player(self):
+    def clear_played(self):
         for player in self.player_list:
             for i in player.played:
                 i  = -1
