@@ -120,7 +120,14 @@ class VillPill(BoardGame):
     def __init__(self):
         super().__init__('vp')
         self.deck = pandas.read_csv('data/newvp.csv', index_col='Num')
-        self.shop = pandas.read_csv('data/newvp.csv', index_col='Num').drop([0, 1, 2, 3], axis=0)
+        #self.shop = pandas.read_csv('data/newvp.csv', index_col='Num').drop([0, 1, 2, 3], axis=0)
+        numbers = np.arange(start=4, stop=28)
+        self.shop_list = np.random.choice(numbers, 4, replace=False).tolist()
+        numbers = numbers.tolist()
+
+        for number in self.shop_list:
+            if number in numbers:
+                numbers.remove(number)
 
     def add_player(self, player_to_add):
         if len(self.player_list) > 6:
@@ -146,7 +153,7 @@ class VillPill(BoardGame):
     def find_played_card(self, card_num):
         for i in range(len(self.player_list)):
             for j in range(2):
-                if player.played[j] == card_num:
+                if self.player_list[i].played[j] == card_num:
                     return True, i, j
         
         return False, -1, -1
@@ -185,6 +192,55 @@ class VillPill(BoardGame):
                 return True, player_idxs[i]
         return False, -1
 
+    def hand_to_text(self, list_of_nums):
+        #list_of_names = []
+        to_return = []
+        for card_num in list_of_nums:
+            temp = self.deck.at[card_num, 'Name'].capitalize()
+            to_return.append(card_num + ": " + temp)
+
+        return to_return
+
+    def buy_card(self, player, card_num, cost):
+        found, idx = self.find_player(player)
+        total_turnips = self.player_list[idx].get_banked() + self.player_list[idx].get_stockpile()
+
+        if found == False:
+            return False
+
+        elif card_num not in self.shop_list:
+            return False
+    
+        elif cost > total_turnips:
+            return False
+
+        else: 
+            self.player_list[idx].purchase(cost)
+            self.player_list[idx].hand.append(card_num)
+            return True
+        
+    def get_money_total(self, player):
+        found, idx = self.find_player(player)
+        if found == False:
+            return False
+        
+        else: 
+            return self.player_list[idx].get_banked(), self.player_list[idx].get_stockpile()
+
+    def get_relic_score(self):
+        to_return = []
+
+        for player in self.player_list:
+            relic_count = 0
+            if player.get_scepter():
+                relic_count += 1
+            if player.get_crown():
+                relic_count += 1
+            if player.get_throne():
+                relic_count += 1
+            to_return.append(relic_count)
+        return to_return
+
     def determine_matchups(self, color):
         card_nums = []
         player_idxs = []
@@ -214,28 +270,6 @@ class VillPill(BoardGame):
                     opp_colors.append(opp_card_color)
         
         return card_nums, player_idxs, opp_idxs, opp_colors
-        # matchups = []
-        # nums = []
-        # temp_1 = []
-        # temp_2 = []
-        # temp_1.append(self.deck.at[self.player_list[len(self.player_list) - 1].get_played()[1], 'Color'])
-        # temp_1.append(self.deck.at[self.player_list[0].get_played()[0], 'Color'])
-        # temp_2.append(self.deck.at[self.player_list[len(self.player_list) - 1].get_played()[1]])
-        # temp_2.append(self.deck.at[self.player_list[0].get_played()[0]])
-        # matchups.append(temp_1)
-        # nums.append(temp_2)
-        # for i in range(len(self.player_list)):
-        #     if i != len(self.player_list) - 1:
-        #         temp_1 = []
-        #         temp_2 = []
-        #         temp_1.append(self.deck.at[self.player_list[i].get_played()[1], 'Color'])
-        #         temp_1.append(self.deck.at[self.player_list[i + 1].get_played()[0], 'Color'])
-        #         temp_2.append(self.deck.at[self.player_list[i].get_played()[1]])
-        #         temp_2.append(self.deck.at[self.player_list[i + 1].get_played()[0]])
-        #         matchups.append(temp_1)
-        #         nums.append(temp_2)
-        # return matchups, nums
-
 
 # covered -, +, +*, O, B, S, S*, C, E*, R, E
 # need to cover T
@@ -467,42 +501,9 @@ class VillPill(BoardGame):
                 self.player_list[s_player_idx].stockpile += 4
 
             self.update_p()
+            # update shop
 
             self.clear_played()
            
         else:
             return False
-                
-        # if self.check_all_play():
-        #     matchups, nums = self.determine_matchup()
-        #     for i in range(stop=4, step=2):
-        #         for j in range(len(matchups)):
-        #             if i == 1:
-        #                 if matchups[j][1] == 'Green':
-        #                     code = self.deck.at[nums[j], matchups[j][0]]
-        #                 if matchups[j + 1][0] == 'Green':
-        #                     code = self.deck.at[nums[j + 1], matchups[j + 1][1]]
-                    
-        #             if i == 2:
-        #                 if matchups[j][1] == 'Blue':
-        #                     code = self.deck.at[nums[j], matchups[j][0]]
-        #                 if matchups[j + 1][0] == 'Blue':
-        #                     code = self.deck.at[nums[j + 1], matchups[j + 1][1]]
-
-        #             if i == 3:
-        #                 if matchups[j][1] == 'Red':
-        #                     code = self.deck.at[nums[j], matchups[j][0]]
-        #                 if matchups[j + 1][0] == 'Red':
-        #                     code = self.deck.at[nums[j + 1], matchups[j + 1][1]]
-
-        #             if i == 4:
-        #                 if matchups[j][1] == 'Yellow':
-        #                     code = self.deck.at[nums[j], matchups[j][0]]
-        #                 if matchups[j + 1][0] == 'Yellow':
-        #                     code = self.deck.at[nums[j + 1], matchups[j + 1][1]]
-                
-        #         for player in self.player_list:
-        #             player.p_bank = player.get_banked()
-        #             player.p_stockpile = player.get_stockpile()
-        #     player.stockpile = player.get_fstock()
-        #     player.p_stockpile = player.get_stockpile()

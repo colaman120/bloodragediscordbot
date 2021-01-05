@@ -36,29 +36,29 @@ import numpy as np
 # p1 = [(11, 1), (10, 1)]
 
 
-game = BloodRage()
-game.add_player('p1')
-game.add_player('p2')
-game.current_age = 3
-game.player_list[0].set_hand('p1')
-game.summon_unit('p1', 'warrior', 'horgr')
-game.summon_unit('p1', 'warrior', 'horgr')
-game.summon_unit('p1', 'warrior', 'horgr')
-game.summon_unit('p1', 'warrior', 'horgr')
+# game = BloodRage()
+# game.add_player('p1')
+# game.add_player('p2')
+# game.current_age = 3
+# game.player_list[0].set_hand('p1')
+# game.summon_unit('p1', 'warrior', 'horgr')
+# game.summon_unit('p1', 'warrior', 'horgr')
+# game.summon_unit('p1', 'warrior', 'horgr')
+# game.summon_unit('p1', 'warrior', 'horgr')
 # game.add_quest(1, 11, 'p1')
 # game.add_quest(1, 10, 'p1')
 # print(game.get_quests('p1'))
 # print(game.end_age('horgr'))
 # print(game.get_glory())
 # print(game.board.get_provinces()[6].get_piece_list())
-print('Anolang')
-for i in range(len(game.board.get_provinces()[6].get_piece_list())):
-   print(game.board.get_provinces()[6].get_piece_list()[i].get_name())
-print(game.player_list[0].get_current_rage())
+# print('Anolang')
+# for i in range(len(game.board.get_provinces()[6].get_piece_list())):
+#    print(game.board.get_provinces()[6].get_piece_list()[i].get_name())
+# print(game.player_list[0].get_current_rage())
 
-print('Myrkulor')
-for i in range(len(game.board.get_provinces()[0].get_piece_list())):
-   print(game.board.get_provinces()[0].get_piece_list()[i].get_name())
+# print('Myrkulor')
+# for i in range(len(game.board.get_provinces()[0].get_piece_list())):
+#    print(game.board.get_provinces()[0].get_piece_list()[i].get_name())
 
 # x = '2*'
 # bad_chars = [';', ':', '!', "*"] 
@@ -68,3 +68,16 @@ for i in range(len(game.board.get_provinces()[0].get_piece_list())):
 
 #game = VillPill()
 #print(game.deck.at[, 'Name'])
+
+numbers = np.arange(start=4, stop=28)
+shop_list = np.random.choice(numbers, 4, replace=False)
+numbers = numbers.tolist()
+shop_list = shop_list.tolist()
+print(numbers)
+for number in shop_list:
+    if number in numbers:
+        print(number)
+        numbers.remove(number)
+        #number -= 1
+print(numbers)
+print(shop_list)

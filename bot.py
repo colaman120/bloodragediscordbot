@@ -47,6 +47,12 @@ async def add_player(ctx):
         else:
             await ctx.send('Player already in game or too many players')
 
+    elif current_game.game_id == 'vp':
+        if current_game.add_player(ctx.message.author):
+            await ctx.send('Player added to Village Pillage game')
+        else:
+            await ctx.send('Player already in game or too many players')
+
     else:
         await ctx.send('Player not added to game')
 
@@ -720,7 +726,7 @@ async def create_vp(ctx):
     global current_game
     current_game = None
     current_game = VillPill()
-    await ctx.send('Game set to Blood Rage')
+    await ctx.send('Game set to Village Pillage')
 
 ####################################################################
 #                    _____________________                         #
