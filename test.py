@@ -66,18 +66,27 @@ import numpy as np
 #     x = x.replace(i, '') 
 # print(int(x))
 
-#game = VillPill()
+game = VillPill()
 #print(game.deck.at[, 'Name'])
+game.add_player('p1')
+game.add_player('p2')
 
-numbers = np.arange(start=4, stop=28)
-shop_list = np.random.choice(numbers, 4, replace=False)
-numbers = numbers.tolist()
-shop_list = shop_list.tolist()
-print(numbers)
-for number in shop_list:
-    if number in numbers:
-        print(number)
-        numbers.remove(number)
-        #number -= 1
-print(numbers)
-print(shop_list)
+# shop = game.show_shop()
+# for i in shop:
+#     print(i)
+
+# hand = game.get_current_hand('p1')
+# for i in hand:
+#     print(i)
+
+# print(type(game.get_all_money_total()))
+# print(game.get_all_money_total())
+
+game.player_list[0].played[0] = 0
+game.player_list[0].played[1] = 1
+game.player_list[1].played[0] = 0
+game.player_list[1].played[1] = 1
+
+game.take_turn()
+
+print(game.get_all_money_total())

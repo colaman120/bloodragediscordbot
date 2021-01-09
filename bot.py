@@ -32,6 +32,8 @@ async def show_game(ctx):
         await ctx.send('No game selected')
     elif current_game.get_game_id() == 'br':
         await ctx.send('Blood Rage')
+    elif current_game.get_game_id() == 'vp':
+        await ctx.send('Village Pillage')
     else:
         await ctx.send(current_game.get_game_id())
 
@@ -94,6 +96,13 @@ async def get_score(ctx):
 
         for i in range(len(scores)):
             await ctx.send(player_list[i].get_player_object().display_name + ": " + str(scores[i]))
+
+    elif current_game.game_id == 'vp':
+        relic_score = current_game.get_relic_score()
+        player_list = current_game.get_player_list()
+
+        for i in range(len(relic_score)):
+            await ctx.send(player_list[i].get_player_object().display_name + ": " + str(relic_score[i]))
 
     else:
         await ctx.send('No score support for this game')
@@ -193,11 +202,12 @@ async def get_stats(ctx):
         else:
             await ctx.send('Player not found')
 
-    # elif current_game.game_id == 'vp':
-    #     found, index = current_game.find_player(ctx.message.author)
-
-    #     if found:
-    #         banked = current_game.get_player_list()[index].get_banked()
+    elif current_game.game_id == 'vp':
+        money = current_game.get_all_money_total()
+        for i in range(len(money)):
+            await ctx.send('**' + current_game.get_player_list()[i].get_player_object().display_name + ':**')
+            await ctx.send('Bank: ' + str(money[i][0]))
+            await ctx.send('Stockpile: ' + str(money[i][1]))
     else:
         await ctx.send('Game not found')
 
@@ -207,6 +217,15 @@ async def get_hand(ctx):
         await ctx.send('No game selected')
     elif current_game.game_id == 'br':
         hand = current_game.get_current_hand(ctx.message.author)
+        if hand == '':
+            await ctx.send('Empty hand')
+        else:
+            for i in range(len(hand)):
+                await ctx.send(hand[i])
+    
+    elif current_game.get_game_id() == 'vp':
+        hand = current_game.get_current_hand(ctx.message.author)
+
         if hand == '':
             await ctx.send('Empty hand')
         else:
@@ -250,6 +269,16 @@ async def get_card(ctx):
             await ctx.send('Card Type: ' + result[1])
             await ctx.send('Cost/Strength: ' + result[2])
             await ctx.send('Description: ' + result[3])
+
+    elif current_game.get_game_id() == 'vp':
+        await ctx.send('What card?')
+        msg = await bot.wait_for('message', check=lambda message: message.author == ctx.author)
+        card_path = 'data/vp_cards/' + msg.content.lower() + '.png'
+
+        if os.path.exists(card_path):
+            await ctx.send(file=discord.File('data/vp_cards/' + msg.content.lower() + '.png'))
+        else:
+            await ctx.send('Not a card or the file does not exist')
     else:
         await ctx.send('No implementation for current game')
 
@@ -406,6 +435,40 @@ async def move(ctx):
     else:
         await ctx.send('No implementation for game yet')
 
+@bot.command(name='play')
+async def play_card(ctx):
+    global current_game
+
+    if current_game == None:
+        await ctx.send('No game selected')
+    
+    elif current_game.get_game_id() == 'vp':
+        await ctx.send('What card would you like to play?')
+        msg = await bot.wait_for('message', check=lambda message: message.author == ctx.author)
+        card = int(msg.content.lower())
+
+        await ctx.send('Which side?')
+        msg = await bot.wait_for('message', check=lambda message: message.author == ctx.author)
+        msg = msg.content.lower()
+        position = -1
+        if msg == 'l' or msg == 'left' or msg == '0':
+            position = 0
+        
+        if msg == 'r' or msg == 'right' or msg == '1':
+            position = 1
+        
+        if position == -1:
+            await ctx.send('Incorrect position')
+        
+        result = current_game.play_card(ctx.message.author, card, position)
+        if result == 1:
+            await ctx.send('Card not in hand')
+        elif result == 2:
+            await ctx.send('Player not found')
+        else:
+            await ctx.send('Card played')
+        
+
 @bot.command(name='show_board_image')
 async def show_board_image(ctx):
     if current_game == None:
@@ -419,35 +482,7 @@ async def show_board(ctx):
         await ctx.send('No game selected')
     elif current_game.game_id == 'br':
         result = current_game.display_board()
-        # for i in range(8):
-        #     await ctx.send('**Province:** ' + result[i][0] + ' (*' + result[i][1] + '*)')
-        #     await ctx.send('Ragnorok: ' + str(result[i][2]))
-        #     await ctx.send('Capacity: ' + str(result[i][3]))
-        #     await ctx.send('Reward: ' + result[i][4])
-        #     await ctx.send('Pieces: ')
-        #     if len(result[i][5]) == 0:
-        #         await ctx.send('Province empty')
-        #     else:
-        #         for j in range(len(result[i][5])):
-        #             await ctx.send(result[i][5][j].to_string())
 
-        # await ctx.send('**Province:** ' + result[8][0])
-        # await ctx.send('Pieces: ')
-        # if len(result[8][5]) == 0:
-        #     await ctx.send('Province empty')
-        # else:
-        #     for j in range(len(result[i][5])):
-        #         await ctx.send(result[i][5][j].to_string())
-
-        
-        # for i in range(9, 13):
-        #     await ctx.send('**Fjord**: ' + result[i][0])
-        #     await ctx.send('Pieces: ')
-        #     if len(result[i][5]) == 0:
-        #         await ctx.send('Province empty')
-        #     else:
-        #         for j in range(len(result[i][5])):
-        #             await ctx.send(result[i][5][j].to_string())
         for i in range(8):
             await ctx.send('**' + result[i][0] + ':** __' + result[i][1] + '__ (' + str(result[i][2]) + ')')
             if len(result[i][3]) == 0:
@@ -474,6 +509,15 @@ async def show_board(ctx):
     else:
         await ctx.send('No implementation for game yet')
 
+@bot.command(name='shop')
+async def show_shop(ctx):
+    if current_game == None:
+        await ctx.send('No game selected')
+    elif current_game.get_game_id() == 'vp':
+        shop = current_game.show_shop()
+        for card in shop:
+            await ctx.send(card)
+
 @bot.command(name='end_round')
 async def end_round(ctx):
     if current_game == None:
@@ -497,6 +541,15 @@ async def end_round(ctx):
                     await ctx.send(str(quests[i][j]))
             
             await ctx.send(valhalla)
+
+    elif current_game.get_game_id() == 'vp':
+        result = current_game.take_turn()
+
+        if result == False:
+            await ctx.send('Not all cards played yet')
+        else:
+            #replace with history over the turn
+            await ctx.send('Great job :)')
 ####################################################################
 #                    ______________________                        #
 #                   |                     |                        #

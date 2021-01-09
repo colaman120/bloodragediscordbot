@@ -33,7 +33,7 @@ class VillPill(BoardGame):
                 return self.p_bank
 
             def get_scepter(self):
-                return self.sceptre
+                return self.scepter
 
             def get_throne(self):
                 return self.throne
@@ -56,8 +56,8 @@ class VillPill(BoardGame):
             def change_fstock(self, delta):
                 self.f_stockpile += delta
 
-            def buy_sceptre(self):
-                self.sceptre = True
+            def buy_scepter(self):
+                self.scepter = True
             
             def buy_throne(self):
                 self.throne = True
@@ -121,13 +121,15 @@ class VillPill(BoardGame):
         super().__init__('vp')
         self.deck = pandas.read_csv('data/newvp.csv', index_col='Num')
         #self.shop = pandas.read_csv('data/newvp.csv', index_col='Num').drop([0, 1, 2, 3], axis=0)
-        numbers = np.arange(start=4, stop=28)
-        self.shop_list = np.random.choice(numbers, 4, replace=False).tolist()
-        numbers = numbers.tolist()
+        self.numbers = np.arange(start=4, stop=28)
+        self.shop_list = np.random.choice(self.numbers, 4, replace=False).tolist()
+        self.numbers = self.numbers.tolist()
 
         for number in self.shop_list:
-            if number in numbers:
-                numbers.remove(number)
+            if number in self.numbers:
+                self.numbers.remove(number)
+        
+        random.shuffle(self.numbers)
 
     def add_player(self, player_to_add):
         if len(self.player_list) > 6:
@@ -172,9 +174,9 @@ class VillPill(BoardGame):
 
                 if self.check_all_play() == False:
                     return self.deck.at[card, 'Name']
-                else:
+                #else:
                     #TODO: Implement card checking and card reading code and methods to automatically play out rounds
-                    pass
+                    #self.take_turn()
             else:
                 return 1
         else:
@@ -192,12 +194,22 @@ class VillPill(BoardGame):
                 return True, player_idxs[i]
         return False, -1
 
+    def get_current_hand(self, player):
+        found, idx = self.find_player(player)
+        if found:
+            return self.hand_to_text(self.player_list[idx].get_hand())
+        else:
+            return ''
+
+    def show_shop(self):
+        return self.hand_to_text(self.shop_list)
+
     def hand_to_text(self, list_of_nums):
         #list_of_names = []
         to_return = []
         for card_num in list_of_nums:
             temp = self.deck.at[card_num, 'Name'].capitalize()
-            to_return.append(card_num + ": " + temp)
+            to_return.append(str(card_num) + ": " + temp)
 
         return to_return
 
@@ -225,7 +237,14 @@ class VillPill(BoardGame):
             return False
         
         else: 
-            return self.player_list[idx].get_banked(), self.player_list[idx].get_stockpile()
+            return [self.player_list[idx].get_banked(), self.player_list[idx].get_stockpile()]
+
+    def get_all_money_total(self):
+        to_return = []
+        for player in self.player_list:
+            moneys = self.get_money_total(player.get_player_object())
+            to_return.append(moneys)
+        return to_return
 
     def get_relic_score(self):
         to_return = []
@@ -241,6 +260,19 @@ class VillPill(BoardGame):
             to_return.append(relic_count)
         return to_return
 
+    def restore_shop(self):
+        cards_needed = 4 - len(self.shop_list)
+
+        if cards_needed == 0:
+            return
+        else:
+            for i in range(cards_needed):
+                card_to_add = self.numbers.pop(0)
+                if card_to_add == -1:
+                    return
+                else:
+                    self.shop_list.append(card_to_add)                
+
     def determine_matchups(self, color):
         card_nums = []
         player_idxs = []
@@ -249,19 +281,19 @@ class VillPill(BoardGame):
 
         for i in range(len(self.player_list)):
             for j in range(len(self.player_list[i].played)):
-                if self.deck.at[self.player_list[i].played[j], 'Color'] == color.capitalize():
+                if self.deck.at[self.player_list[i].played[j], 'Color'] == color:
                     card_nums.append(self.player_list[i].played[j])
                     player_idxs.append(i)
 
                     if j == 0:
                         opp_idxs.append(i - 1)
                     else:
-                        if i != 3:
+                        if i < len(self.player_list) - 1:
                             opp_idxs.append(i + 1)
                         else:
                             opp_idxs.append(0)
 
-                    opp_player = self.player_list[opp_idxs[len(opp_idxs)]]
+                    opp_player = self.player_list[opp_idxs[len(opp_idxs) - 1]]
                     opp_card_color = ''
                     if j == 0:
                         opp_card_color = self.deck.at[opp_player.played[1], 'Color']
@@ -275,6 +307,7 @@ class VillPill(BoardGame):
 # need to cover T
 # need to add opp_card number or find some other way to do it with out specifically requiring it, would
 # need to be another method, not impossible
+# this code needs to be tested
 
     def run_code(self, num_card, player_idx, opp_idx, opp_color):
         code = self.deck.at[num_card, opp_color.capitalize()]
@@ -298,7 +331,7 @@ class VillPill(BoardGame):
                 continue
 
             if code[pointer_idx] == 'B':
-                self.bank_turnips(int(code[pointer_idx] + 1), player_idx)
+                self.bank_turnips(int(code[pointer_idx + 1]), player_idx)
                 pointer_idx += 2
                 continue
                 
@@ -322,7 +355,7 @@ class VillPill(BoardGame):
                 self.steal_turnips(to_steal, player_idx, opp_idx, banked)
             
             if code[pointer_idx] == 'C':
-                self.add_turnips(int(code[pointer_idx + 1]), player_idx)
+                #self.add_turnips(int(code[pointer_idx + 1]), player_idx)
                 pointer_idx += 2
                 continue
 
@@ -360,12 +393,12 @@ class VillPill(BoardGame):
         player = self.player_list[player_idx]
 
         if len(self.player_list) > 2:
-            if delta > 5 - player.bank:
-                delta = 5 - player.bank
+            if delta > 5 - player.banked:
+                delta = 5 - player.banked
             
         elif len(self.player_list) == 2:
-            if delta > 4 - player.bank:
-                delta = 4 - player.bank
+            if delta > 4 - player.banked:
+                delta = 4 - player.banked
         
         self.player_list[player_idx].stockpile -= delta
         self.player_list[player_idx].stockpile += delta
@@ -474,12 +507,14 @@ class VillPill(BoardGame):
             self.unexhaust_all()
 
             if len(g_nums) != 0:
+                print("greens")
                 for i in range(len(g_nums)):
                     self.run_code(g_nums[i], g_player_idx[i], g_opp[i], g_opp_color[i])
             
             self.update_p()
             
             if len(b_nums) != 0:
+                print("blues")
                 for i in range(len(b_nums)):
                     self.run_code(b_nums[i], b_player_idx[i], b_opp[i], b_opp_color[i])
 
@@ -502,6 +537,7 @@ class VillPill(BoardGame):
 
             self.update_p()
             # update shop
+            self.restore_shop()
 
             self.clear_played()
            
