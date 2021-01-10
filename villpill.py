@@ -168,6 +168,9 @@ class VillPill(BoardGame):
 
     def play_card(self, player, card, side):
         found, index = self.find_player(player)
+        if side == -1:
+            return 3
+
         if found:
             if self.check_card_in_hand(card, index):
                 self.player_list[index].play_card(card, side)
@@ -208,8 +211,12 @@ class VillPill(BoardGame):
         #list_of_names = []
         to_return = []
         for card_num in list_of_nums:
-            temp = self.deck.at[card_num, 'Name'].capitalize()
-            to_return.append(str(card_num) + ": " + temp)
+            if card_num != -1:
+                temp = self.deck.at[card_num, 'Name'].capitalize()
+                to_return.append(str(card_num) + ": " + temp)
+
+            else:
+                to_return.append('No card found')
 
         return to_return
 
@@ -226,7 +233,8 @@ class VillPill(BoardGame):
         elif cost > total_turnips:
             return False
 
-        else: 
+        else:
+            self.shop_list.remove(card_num)
             self.player_list[idx].purchase(cost)
             self.player_list[idx].hand.append(card_num)
             return True
@@ -322,44 +330,54 @@ class VillPill(BoardGame):
                     return
                 else:
                     self.add_turnips(int(code[pointer_idx + 1]), player_idx)
+                    print("adding " + code[pointer_idx + 1])
                 pointer_idx += 2
                 continue
 
             if code[pointer_idx] == 'O':
                 self.add_turnips(int(code[pointer_idx + 1]), opp_idx)
+                print("opponent adding " + code[pointer_idx + 1])
                 pointer_idx += 2
                 continue
 
             if code[pointer_idx] == 'B':
                 self.bank_turnips(int(code[pointer_idx + 1]), player_idx)
+                print("banking " + code[pointer_idx + 1])
                 pointer_idx += 2
                 continue
                 
             if code[pointer_idx] == 'S':
+                print("stealing " + code[pointer_idx + 1])
                 banked = False
                 to_steal = 0
                 if code[pointer_idx + 1] == '*':
                     banked = True
+                    print('banked steal')
                     to_steal = int(code[pointer_idx + 2])
                     pointer_idx += 3
                 
                 elif code[pointer_idx + 1] != '-':
                     to_steal = int(code[pointer_idx + 1])
+                    print('standard steal')
                     pointer_idx += 2
                 
                 else:
+                    print('losing steal')
                     negative_steal = code[pointer_idx:pointer_idx + 1]
                     to_steal = int(negative_steal)
                     pointer_idx += 2
-                
+                 
                 self.steal_turnips(to_steal, player_idx, opp_idx, banked)
+                continue
             
             if code[pointer_idx] == 'C':
                 #self.add_turnips(int(code[pointer_idx + 1]), player_idx)
+                print('buying')
                 pointer_idx += 2
                 continue
 
             if code[pointer_idx] == 'E':
+                print('exhausting')
                 opp_card = True
                 if code[pointer_idx + 1] == '*':
                     opp_card = False
@@ -371,6 +389,7 @@ class VillPill(BoardGame):
                 continue
                 
             if code[pointer_idx] == 'R':
+                print('relic')
                 cost = 1
                 if code[pointer_idx + 1].isnumeric():
                     cost = 0
@@ -381,6 +400,7 @@ class VillPill(BoardGame):
                 continue
 
             if code[pointer_idx] == 'T':
+                print('trading')
                 self.trade_card(player_idx, opp_idx, num_card)
                 pointer_idx += 1
                 continue
@@ -401,7 +421,7 @@ class VillPill(BoardGame):
                 delta = 4 - player.banked
         
         self.player_list[player_idx].stockpile -= delta
-        self.player_list[player_idx].stockpile += delta
+        self.player_list[player_idx].banked += delta
 
     def steal_turnips(self, delta, player_idx, opp_idx, banked):
         turnips_stolen = 0
@@ -420,9 +440,13 @@ class VillPill(BoardGame):
                     turnips_stolen += self.player_list[opp_idx].get_pbank() - remaining
                     self.player_list[opp_idx].bank -= remaining
             
-            else:
-                turnips_stolen = delta
-                self.player_list[opp_idx].stockpile -= delta
+            # else:
+            #     turnips_stolen = delta
+            #     self.player_list[opp_idx].stockpile -= delta
+        else:
+            turnips_stolen = delta
+            self.player_list[opp_idx].stockpile -= delta
+            
             
         self.player_list[player_idx].stockpile += turnips_stolen
 
@@ -498,6 +522,8 @@ class VillPill(BoardGame):
 
     def take_turn(self):
         if self.check_all_play():
+            for player in self.player_list:
+                print(player.played)
             g_nums, g_player_idx, g_opp, g_opp_color = self.determine_matchups('green')
             b_nums, b_player_idx, b_opp, b_opp_color = self.determine_matchups('blue')
             r_nums, r_player_idx, r_opp, r_opp_color = self.determine_matchups('red')
@@ -507,14 +533,12 @@ class VillPill(BoardGame):
             self.unexhaust_all()
 
             if len(g_nums) != 0:
-                print("greens")
                 for i in range(len(g_nums)):
                     self.run_code(g_nums[i], g_player_idx[i], g_opp[i], g_opp_color[i])
             
             self.update_p()
             
             if len(b_nums) != 0:
-                print("blues")
                 for i in range(len(b_nums)):
                     self.run_code(b_nums[i], b_player_idx[i], b_opp[i], b_opp_color[i])
 
@@ -525,6 +549,7 @@ class VillPill(BoardGame):
                     self.run_code(r_nums[i], r_player_idx[i], r_opp[i], r_opp_color[i])
             
             self.update_p()
+            print(self.get_all_money_total())
 
             if len(y_nums) != 0:
                 for i in range(len(y_nums)):
@@ -537,7 +562,7 @@ class VillPill(BoardGame):
 
             self.update_p()
             # update shop
-            self.restore_shop()
+            #self.restore_shop()
 
             self.clear_played()
            

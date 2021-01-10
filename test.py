@@ -82,11 +82,12 @@ game.add_player('p2')
 # print(type(game.get_all_money_total()))
 # print(game.get_all_money_total())
 
-game.player_list[0].played[0] = 0
-game.player_list[0].played[1] = 1
-game.player_list[1].played[0] = 0
+game.player_list[0].played[0] = 2
+game.player_list[0].played[1] = 0
+game.player_list[1].played[0] = 2
 game.player_list[1].played[1] = 1
 
+# game.steal_turnips(2, 0, 1, False)
 game.take_turn()
 
 print(game.get_all_money_total())

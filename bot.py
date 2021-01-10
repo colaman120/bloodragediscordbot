@@ -62,6 +62,8 @@ async def add_player(ctx):
 @bot.command(name='show_players', help='Displays all current players added')
 async def show_players(ctx):
     global current_game
+    if current_game == None:
+        await ctx.send('No game selected')
     player_list = current_game.get_player_list()
 
     if len(player_list) == 0:
@@ -213,6 +215,8 @@ async def get_stats(ctx):
 
 @bot.command(name='get_hand', help='Shows your current hand')
 async def get_hand(ctx):
+    global current_game
+
     if current_game == None:
         await ctx.send('No game selected')
     elif current_game.game_id == 'br':
@@ -284,6 +288,7 @@ async def get_card(ctx):
 
 @bot.command(name='remove_card', help='Removes card from hand')
 async def remove_card(ctx):
+    global current_game
     if current_game == None:
         await ctx.send('No game selected')
     elif current_game.game_id == 'br':
@@ -321,6 +326,7 @@ async def remove_card(ctx):
 
 @bot.command(name='summon')
 async def summon(ctx):
+    global current_game
     if current_game == None:
         await ctx.send('No game selected')
     elif current_game.game_id == 'br':
@@ -367,6 +373,7 @@ async def summon(ctx):
 
 @bot.command(name='kill_piece')
 async def kill(ctx):
+    global current_game
     if current_game == None:
         await ctx.send('No game selected')
     elif current_game.game_id == 'br':
@@ -392,6 +399,7 @@ async def kill(ctx):
 
 @bot.command(name='move')
 async def move(ctx):
+    global current_game
     if current_game == None:
         await ctx.send('No game selected')
     elif current_game.game_id == 'br':
@@ -457,20 +465,19 @@ async def play_card(ctx):
         if msg == 'r' or msg == 'right' or msg == '1':
             position = 1
         
-        if position == -1:
-            await ctx.send('Incorrect position')
-        
         result = current_game.play_card(ctx.message.author, card, position)
         if result == 1:
             await ctx.send('Card not in hand')
         elif result == 2:
             await ctx.send('Player not found')
+        elif result == 3:
+            await ctx.send('Incorrect positioning')
         else:
             await ctx.send('Card played')
         
-
 @bot.command(name='show_board_image')
 async def show_board_image(ctx):
+    global current_game
     if current_game == None:
         await ctx.send('No game selected')
     elif current_game.game_id == 'br':
@@ -478,6 +485,7 @@ async def show_board_image(ctx):
 
 @bot.command(name='show_board')
 async def show_board(ctx):
+    global current_game
     if current_game == None:
         await ctx.send('No game selected')
     elif current_game.game_id == 'br':
@@ -511,6 +519,7 @@ async def show_board(ctx):
 
 @bot.command(name='shop')
 async def show_shop(ctx):
+    global current_game
     if current_game == None:
         await ctx.send('No game selected')
     elif current_game.get_game_id() == 'vp':
@@ -520,6 +529,7 @@ async def show_shop(ctx):
 
 @bot.command(name='end_round')
 async def end_round(ctx):
+    global current_game
     if current_game == None:
         await ctx.send('No game selected')
     elif current_game.game_id == 'br':
@@ -665,6 +675,7 @@ async def view_upgrades(ctx):
 
 @bot.command(name='rag_check')
 async def rag_check(ctx):
+    global current_game
     if current_game.get_game_id() == 'br':
         result = current_game.rag_check()
         province_list = current_game.board.get_provinces()
@@ -674,6 +685,7 @@ async def rag_check(ctx):
             
 @bot.command(name='pillage_rewards')
 async def show_pillage_rewards(ctx):
+    global current_game
     if current_game.get_game_id() == 'br':
         result = current_game.pillage_rewards()
         for i in range(len(result)):
@@ -681,6 +693,7 @@ async def show_pillage_rewards(ctx):
 
 @bot.command(name='valhalla')
 async def show_valhalla(ctx):
+    global current_game
     if current_game.get_game_id() == 'br':
         result = current_game.show_valhalla()
         if len(result) == 0:
@@ -691,6 +704,7 @@ async def show_valhalla(ctx):
 
 @bot.command(name='add_rage')
 async def change_rage(ctx, delta: int):
+    global current_game
     if current_game.get_game_id() == 'br':
         result = current_game.change_rage(delta, ctx.message.author)
         if result:
@@ -701,6 +715,7 @@ async def change_rage(ctx, delta: int):
 
 @bot.command(name='get_rage')
 async def show_current_rage(ctx):
+    global current_game
     if current_game.get_game_id() == 'br':
         result = current_game.get_current_rage(ctx.message.author)
         if result < -9:
@@ -710,6 +725,7 @@ async def show_current_rage(ctx):
 
 @bot.command(name='get_quests')
 async def get_quests(ctx):
+    global current_game
     if current_game.get_game_id() == 'br':
         result = current_game.get_quests(ctx.message.author)
         if result == -1:
@@ -719,6 +735,7 @@ async def get_quests(ctx):
 
 @bot.command(name='set_quest')
 async def add_quest(ctx, age: int, card: int):
+    global current_game
     if current_game.get_game_id() == 'br':
         result = current_game.add_quest(age, card, ctx.message.author)
         if result == -1:
@@ -734,6 +751,7 @@ async def add_quest(ctx, age: int, card: int):
 
 @bot.command(name='show_province')
 async def show_province(ctx, province):
+    global current_game
     if current_game == None:
         await ctx.send('No game selected')
     elif current_game.game_id == 'br':
@@ -754,6 +772,7 @@ async def show_province(ctx, province):
 
 @bot.command(name='ragnorok')
 async def rag(ctx, province):
+    global current_game
     if current_game.get_game_id() == 'br':
         result = current_game.rag(province)
         if result == 0:
@@ -781,6 +800,73 @@ async def create_vp(ctx):
     current_game = VillPill()
     await ctx.send('Game set to Village Pillage')
 
+@bot.command(name='opponents')
+async def get_opponent_positions(ctx):
+    global current_game
+    if current_game.get_game_id() == 'vp':
+        found, idx = current_game.find_player(ctx.message.author)
+        length = len(current_game.get_player_list())
+
+        if found:
+            if idx == length - 1:
+                await ctx.send('**Left side:** ' + current_game.get_player_list()[idx - 1].get_player_object().display_name)
+                await ctx.send('**Right side:** ' + current_game.get_player_list()[0].get_player_object().display_name)
+            else:
+                await ctx.send('**Left side:** ' + current_game.get_player_list()[idx - 1].get_player_object().display_name)
+                await ctx.send('**Right side:** ' + current_game.get_player_list()[idx + 1].get_player_object().display_name)
+        
+        else:
+            await ctx.send('Player not found')
+    else:
+        await ctx.send('No implementation for current game')
+
+@bot.command(name='view_played')
+async def get_played_cards(ctx):
+    global current_game
+    if current_game.get_game_id() == 'vp':
+        found, idx = current_game.find_player(ctx.message.author)
+
+        if found:
+            current_player = current_game.get_player_list()[idx]
+            result = current_game.hand_to_text(current_player.get_played())
+            await ctx.send('**Left side:** ')
+            await ctx.send(result[0])
+            await ctx.send('**Right side:** ')
+            await ctx.send(result[1])
+        
+        else:
+            await ctx.send('Player not found')
+    else:
+        await ctx.send('No implementation for current game')
+
+@bot.command(name='buy')
+async def buy_card(ctx):
+    global current_game
+    if current_game.get_game_id() == 'vp':
+        await ctx.send('What card would you like to buy?')
+        msg = await bot.wait_for('message', check=lambda message: message.author == ctx.author)
+        card_num = int(msg.content)
+
+        await ctx.send('At what price?')
+        msg = await bot.wait_for('message', check=lambda message: message.author == ctx.author)
+        cost = int(msg.content)
+
+        result = current_game.buy_card(ctx.message.author, card_num, cost)
+        
+        if result == False:
+            await ctx.send('Could not buy card')
+        else:
+            await ctx.send('Card successfully bought')
+    else:
+        await ctx.send('No implementation for current game')
+
+@bot.command(name='restore_shop')
+async def restore_shop_front(ctx):
+    global current_game
+    if current_game.get_game_id() == 'vp': 
+        current_game.restore_shop()
+    else:
+        await ctx.send('No implementation for current game')
 ####################################################################
 #                    _____________________                         #
 #                   |                    |                         #
