@@ -177,9 +177,7 @@ class VillPill(BoardGame):
 
                 if self.check_all_play() == False:
                     return self.deck.at[card, 'Name']
-                #else:
-                    #TODO: Implement card checking and card reading code and methods to automatically play out rounds
-                    #self.take_turn()
+
             else:
                 return 1
         else:

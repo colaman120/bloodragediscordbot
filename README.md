@@ -15,6 +15,10 @@ What a year. I put this down again to focus on school. Before that, I had starte
 
 Also note that I have made a good amount of changes to how using the commands for this bot works without updating the README here, so do not assume all the commands here work as they are described. This was mostly for the expansion into a different game. 
 
+
+
+For a somewhat more organized and up-to-date version of what is written down below, vist [this](https://www.notion.so/1f7cdf42065145aeb1ba36552592b01e?v=f0021c2466d84794a6444024eee8e813) link and read up on some of the methods and commands used in this bot. (note that only the front end commands have been recorded)
+
 ### General Commands:
 **!join**: Allows discord users to enter the ongoing game. Anyone that wants to join must type this command. 
 

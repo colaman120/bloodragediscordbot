@@ -184,7 +184,7 @@ async def add_stats(ctx):
     else:
         await ctx.send('how did you even get here')
 
-@bot.command(name='get_stats', help='Shows your clan stats')
+@bot.command(name='get_stats')
 async def get_stats(ctx):
     global current_game
 
