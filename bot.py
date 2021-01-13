@@ -555,11 +555,17 @@ async def end_round(ctx):
     elif current_game.get_game_id() == 'vp':
         result = current_game.take_turn()
 
-        if result == False:
+        if result == []:
             await ctx.send('Not all cards played yet')
         else:
-            #replace with history over the turn
-            await ctx.send('Great job :)')
+            for i in range(len(result)):
+                await ctx.send('**' + current_game.player_list[i].get_player_object().display_name + ':**')
+                for history in result[i]:
+                    await ctx.send(history)
+                money = current_game.get_money_total(current_game.get_player_list()[i].get_player_object())
+                await ctx.send('*Bank:* ' + str(money[0]))
+                await ctx.send('*Stockpile:* ' + str(money[1]))
+        
 ####################################################################
 #                    ______________________                        #
 #                   |                     |                        #

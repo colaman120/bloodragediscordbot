@@ -2,13 +2,13 @@ Num,Name,Color,Green,Blue,Red,Yellow
 0,farmer,green,+3,+3,+3,+3
 1,wall,blue,+1B1,+1B1,S1B1,+1B1
 2,raider,red,S4,-,-,S4
-3,merchant,yellow,R0C1,R0C1,R0C1,R0C1
+3,merchant,yellow,R+0C1,R+0C1,R+0C1,R+0C1
 4,dungeon,blue,+1B2,+1S1B1,+1S1B1,+1B2
 5,trapper,red,S4+1,-,S1,S4+1
 6,innkeeper,green,+4,+4,+4,+5C0
 7,mason,green,+4,+4S1B2,+4,+4
 8,berserker,red,S6,S-1,-,S6
-9,doctor,yellow,R0E+2,R0E+2,R0E+2,R0E+2
+9,doctor,yellow,R+0E+2,R+0E+2,R+0E+2,R+0E+2
 10,outlaw,red,S5,-,-,S4B0
 11,toll bridge,blue,B2,B2,S*2,S*2
 12,shepherd,green,+*4,+*4,+*4,+*4
@@ -19,7 +19,7 @@ Num,Name,Color,Green,Blue,Red,Yellow
 17,pickler,green,+4B2,+4B2,+4,+4B2
 18,rat catcher,green,+6,+4,+4,+4
 19,florist,green,+5,+5,+5S-2,+5
-20,bard,yellow,RD+1,RD+1,RD+1,RD+1
+20,bard,yellow,R0D+1,R0D+1,R0D+1,R0D+1
 21,moat,blue,O1,B2,+2S3,B2
 22,labyrinth,blue,+1B2,+1B2,ES3,+1B2
 23,cutpurse,red,S6,-,S-1,S6

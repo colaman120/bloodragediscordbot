@@ -66,28 +66,33 @@ import numpy as np
 #     x = x.replace(i, '') 
 # print(int(x))
 
-game = VillPill()
-#print(game.deck.at[, 'Name'])
-game.add_player('p1')
-game.add_player('p2')
+# game = VillPill()
+# #print(game.deck.at[, 'Name'])
+# game.add_player('p1')
+# game.add_player('p2')
 
-# shop = game.show_shop()
-# for i in shop:
-#     print(i)
+# # shop = game.show_shop()
+# # for i in shop:
+# #     print(i)
 
-# hand = game.get_current_hand('p1')
-# for i in hand:
-#     print(i)
+# # hand = game.get_current_hand('p1')
+# # for i in hand:
+# #     print(i)
 
-# print(type(game.get_all_money_total()))
+# # print(type(game.get_all_money_total()))
+# # print(game.get_all_money_total())
+
+# # game.player_list[0].played[0] = 2
+# # game.player_list[0].played[1] = 0
+# # game.player_list[1].played[0] = 2
+# # game.player_list[1].played[1] = 1
+
+# # game.steal_turnips(2, 0, 1, False)
+# game.take_turn()
 # print(game.get_all_money_total())
 
-game.player_list[0].played[0] = 2
-game.player_list[0].played[1] = 0
-game.player_list[1].played[0] = 2
-game.player_list[1].played[1] = 1
-
-# game.steal_turnips(2, 0, 1, False)
-game.take_turn()
-
-print(game.get_all_money_total())
+code = 'R-2C1'
+pointer_idx = 0
+integer = int(code[pointer_idx + 1: pointer_idx + 3])
+print(integer)
+print(type(integer))

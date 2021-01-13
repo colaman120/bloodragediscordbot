@@ -120,7 +120,7 @@ class VillPill(BoardGame):
     def __init__(self):
         super().__init__('vp')
         self.deck = pandas.read_csv('data/newvp.csv', index_col='Num')
-        #self.shop = pandas.read_csv('data/newvp.csv', index_col='Num').drop([0, 1, 2, 3], axis=0)
+        self.history = []
         self.numbers = np.arange(start=4, stop=28)
         self.shop_list = np.random.choice(self.numbers, 4, replace=False).tolist()
         self.numbers = self.numbers.tolist()
@@ -141,6 +141,7 @@ class VillPill(BoardGame):
             
         new_player = self.VPPlayer(player_to_add)
         self.player_list.append(new_player)
+        self.history.append([])
         return True
     
     def find_player(self, player_to_find):
@@ -317,89 +318,110 @@ class VillPill(BoardGame):
 
     def run_code(self, num_card, player_idx, opp_idx, opp_color):
         code = self.deck.at[num_card, opp_color.capitalize()]
+        player_name = self.player_list[player_idx].get_player_object().display_name
+        opp_name = self.player_list[opp_idx].get_player_object().display_name
+        relic_purchased = False      
 
         pointer_idx = 0
         while (pointer_idx < len(code)):
-            if code[pointer_idx] =='-':
+            history_string = 'Using **' + self.hand_to_text([num_card])[0] + '**, ' 
+            if code[pointer_idx] == '-':
                 return
 
             if code[pointer_idx] == '+':
                 if code[pointer_idx + 1] == '*':
+                    history_string += player_name + ' added ' + str(code[pointer_idx + 2]) + ' turnip(s) during refresh against ' + opp_name
+                    self.history[player_idx].append(history_string)
                     return
                 else:
                     self.add_turnips(int(code[pointer_idx + 1]), player_idx)
-                    print("adding " + code[pointer_idx + 1])
+                    history_string += player_name + ' added ' + str(code[pointer_idx + 1]) + ' turnips against ' + opp_name
+                    self.history[player_idx].append(history_string)
                 pointer_idx += 2
                 continue
 
             if code[pointer_idx] == 'O':
                 self.add_turnips(int(code[pointer_idx + 1]), opp_idx)
-                print("opponent adding " + code[pointer_idx + 1])
+                history_string += player_name + ' allowed ' + opp_name + ' to gain ' + str(code[pointer_idx + 1]) + ' turnip(s)'
+                self.history[player_idx].append(history_string)
                 pointer_idx += 2
                 continue
 
             if code[pointer_idx] == 'B':
-                self.bank_turnips(int(code[pointer_idx + 1]), player_idx)
-                print("banking " + code[pointer_idx + 1])
+                self.bank_turnips(int(code[pointer_idx + 1]), player_idx)      
+                history_string += player_name + ' banked ' + str(code[pointer_idx + 1]) + ' turnips against ' + opp_name
+                self.history[player_idx].append(history_string)
                 pointer_idx += 2
                 continue
                 
             if code[pointer_idx] == 'S':
-                print("stealing " + code[pointer_idx + 1])
+                steal_type = -1
                 banked = False
                 to_steal = 0
                 if code[pointer_idx + 1] == '*':
+                    steal_type = 0
                     banked = True
-                    print('banked steal')
                     to_steal = int(code[pointer_idx + 2])
                     pointer_idx += 3
                 
                 elif code[pointer_idx + 1] != '-':
+                    steal_type = 1
                     to_steal = int(code[pointer_idx + 1])
-                    print('standard steal')
                     pointer_idx += 2
                 
                 else:
-                    print('losing steal')
+                    steal_type = 2
                     negative_steal = code[pointer_idx:pointer_idx + 1]
                     to_steal = int(negative_steal)
                     pointer_idx += 2
                  
-                self.steal_turnips(to_steal, player_idx, opp_idx, banked)
+                result = self.steal_turnips(to_steal, player_idx, opp_idx, banked)
+                if steal_type == 0:
+                    history_string += player_name + ' stole ' + str(result) + ' turnip(s) from ' + opp_name + ' including banked turnips'
+                elif steal_type == 1:
+                    history_string += player_name + ' stole ' + str(result) + ' turnip(s) from ' + opp_name
+                elif steal_type == 2:
+                    history_string += player_name + ' allowed ' + opp_name + ' to steal ' + str(result) + ' turnip(s)'
+                self.history[player_idx].append(history_string)
                 continue
             
             if code[pointer_idx] == 'C':
-                #self.add_turnips(int(code[pointer_idx + 1]), player_idx)
-                print('buying')
+                if relic_purchased == False:
+                    history_string += player_name + ' can buy a card for ' + str(code[pointer_idx + 1]) + ' turnip(s) against ' + opp_name
+                    self.history[player_idx].append(history_string)
                 pointer_idx += 2
                 continue
 
             if code[pointer_idx] == 'E':
-                print('exhausting')
                 opp_card = True
                 if code[pointer_idx + 1] == '*':
                     opp_card = False
                     self.exhaust_card(num_card, player_idx, opp_idx, opp_card)
+                    history_string += player_name + ' exhausted their own card'
+                    self.history[player_idx].append(history_string)
                     pointer_idx += 2
                 else:
+                    history_string += player_name + ' exhausted ' + opp_name + "'s card"
+                    self.history[player_idx].append(history_string)
                     self.exhaust_card(num_card, player_idx, opp_idx, opp_card)
                     pointer_idx += 1
                 continue
                 
             if code[pointer_idx] == 'R':
-                print('relic')
-                cost = 1
-                if code[pointer_idx + 1].isnumeric():
-                    cost = 0
-                    pointer_idx += 1
+                cost = int(code[pointer_idx + 1: pointer_idx + 3])
 
-                self.buy_relic(player_idx, cost)
-                pointer_idx += 1
+                result, relic_num = self.buy_relic(player_idx, cost)
+                if result:
+                    history_string += player_name + ' bought relic number ' + str(relic_num)
+                    self.history[player_idx].append(history_string)
+
+                pointer_idx += 3
                 continue
 
             if code[pointer_idx] == 'T':
-                print('trading')
                 self.trade_card(player_idx, opp_idx, num_card)
+                history_string += player_name + ' traded their card with ' + opp_name + "'s card" 
+                self.history[player_idx].append(history_string)
                 pointer_idx += 1
                 continue
 
@@ -438,15 +460,13 @@ class VillPill(BoardGame):
                     turnips_stolen += self.player_list[opp_idx].get_pbank() - remaining
                     self.player_list[opp_idx].bank -= remaining
             
-            # else:
-            #     turnips_stolen = delta
-            #     self.player_list[opp_idx].stockpile -= delta
         else:
             turnips_stolen = delta
             self.player_list[opp_idx].stockpile -= delta
             
             
         self.player_list[player_idx].stockpile += turnips_stolen
+        return turnips_stolen
 
     def exhaust_card(self, card_num, player_idx, opp_idx, opp_card):
         if opp_card:
@@ -465,30 +485,37 @@ class VillPill(BoardGame):
         total_turnips = player.get_banked() + player.get_stockpile()
 
         if len(self.player_list) == 2:
-            if player.get_scepter() == False and total_turnips >= 6:
-                player.purchase(6)
+            if player.get_scepter() == False and total_turnips >= 6 + cost:
+                player.purchase(6 + cost)
                 player.buy_scepter()
+                return True, 1
 
-            elif player.get_scepter() and player.get_crown() == False and total_turnips >= 7:
-                player.purchase(7)
+            elif player.get_scepter() and player.get_crown() == False and total_turnips >= 7 + cost:
+                player.purchase(7 + cost)
                 player.buy_crown()
+                return True, 2
             
-            elif player.get_scepter() and player.get_crown() and player.get_throne() == False and total_turnips >= 8:
-                player.purchase(8)
+            elif player.get_scepter() and player.get_crown() and player.get_throne() == False and total_turnips >= 8 + cost:
+                player.purchase(8 + cost)
                 player.buy_throne()
+                return True, 3
 
         else:
-            if player.get_scepter() == False and total_turnips >= 8:
-                player.purchase(8)
+            if player.get_scepter() == False and total_turnips >= 8 + cost:
+                player.purchase(8 + cost)
                 player.buy_scepter()
+                return True, 1
 
-            elif player.get_scepter() and player.get_crown() == False and total_turnips >= 9:
-                player.purchase(9)
+            elif player.get_scepter() and player.get_crown() == False and total_turnips >= 9 + cost:
+                player.purchase(9 + cost)
                 player.buy_crown()
+                return True, 2
             
-            elif player.get_scepter() and player.get_crown() and player.get_throne() == False and total_turnips >= 10:
-                player.purchase(10)
+            elif player.get_scepter() and player.get_crown() and player.get_throne() == False and total_turnips >= 10 + cost:
+                player.purchase(10 + cost)
                 player.buy_throne()
+                return True, 3
+        return False, 0
 
     def trade_card(self, player_idx, opp_idx, card_num):
         found, temp, player_card_pos = self.find_played_card(card_num)
@@ -513,15 +540,19 @@ class VillPill(BoardGame):
         for player in self.player_list:
             player.unexhaust_card()
 
+    def clear_history(self):
+        self.history.clear()
+        for i in range(len(self.player_list)):
+            self.history.append([])
+
     def clear_played(self):
         for player in self.player_list:
-            for i in player.played:
-                i  = -1
+            for i in range(len(player.get_played())):
+                player.get_played()[i] = -1
 
     def take_turn(self):
         if self.check_all_play():
-            for player in self.player_list:
-                print(player.played)
+            self.clear_history()
             g_nums, g_player_idx, g_opp, g_opp_color = self.determine_matchups('green')
             b_nums, b_player_idx, b_opp, b_opp_color = self.determine_matchups('blue')
             r_nums, r_player_idx, r_opp, r_opp_color = self.determine_matchups('red')
@@ -547,7 +578,6 @@ class VillPill(BoardGame):
                     self.run_code(r_nums[i], r_player_idx[i], r_opp[i], r_opp_color[i])
             
             self.update_p()
-            print(self.get_all_money_total())
 
             if len(y_nums) != 0:
                 for i in range(len(y_nums)):
@@ -559,10 +589,8 @@ class VillPill(BoardGame):
                 self.player_list[s_player_idx].stockpile += 4
 
             self.update_p()
-            # update shop
-            #self.restore_shop()
 
             self.clear_played()
-           
+            return self.history
         else:
-            return False
+            return []
